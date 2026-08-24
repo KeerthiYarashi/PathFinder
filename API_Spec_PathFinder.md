@@ -20,7 +20,7 @@ backend/
 │   │   ├── learner.py       # /api/v1/learner endpoints
 │   │   ├── path.py          # /api/v1/path endpoints (generation, gaps)
 │   │   ├── modules.py       # /api/v1/modules endpoints (progress, explanation)
-│   │   └── mentor.py        # /api/v1/mentor endpoints
+│   │   └── mentor.py        # /api/v1/mentor endpoints (LangServe)
 ├── schemas/                 # Pydantic Models (Request/Response validation)
 │   ├── learner.py
 │   ├── path.py
@@ -34,7 +34,7 @@ backend/
 ├── services/                # External/AI Integrations
 │   ├── llm.py               # OpenAI/Gemini abstraction
 │   ├── vector_store.py      # ChromaDB client wrapper
-│   └── mentor_agent.py      # LangChain ReAct agent
+│   ├── mentor_agent.py      # LangGraph Stateful Agent + Tool Bindings
 ├── db/                      # Data Access Layer (PostgreSQL/SQLite)
 │   ├── database.py          # SQLAlchemy engine & session maker
 │   ├── models.py            # SQLAlchemy ORM models
@@ -222,18 +222,12 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
 ### 2.14 Project Recommendations
 *   *(Handled via the Path Generation endpoint (2.6) which inserts projects at milestones, or via Milestone Completion (2.13).)*
 
-### 2.15 AI Mentor / Chat
+### 2.15 AI Mentor / Chat (LangServe)
 *   **Method:** `POST`
-*   **URL:** `/mentor/chat`
-*   **Purpose:** Interact with the ReAct Agent. The backend injects the learner's state as context.
-*   **Request Schema:** `{"message": "Why is math before ML?"}`
-*   **Response Schema:**
-    ```json
-    {
-      "reply": "Because ML requires linear algebra...",
-      "suggested_actions": [] 
-    }
-    ```
+*   **URL:** `/mentor/invoke` (or `/mentor/stream` for SSE)
+*   **Purpose:** Interact with the LangGraph Stateful Agent via LangServe endpoints.
+*   **Request Schema:** LangServe Standard `{"input": {"message": "Why is math before ML?", "learner_id": "123"}}`
+*   **Playground URL:** `/mentor/playground` (Built-in testing UI provided by LangServe).
 
 ### 2.16 Feedback
 *   **Method:** `POST`

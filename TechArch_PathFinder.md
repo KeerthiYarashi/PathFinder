@@ -171,7 +171,7 @@ pathfinder/
 |---------|---------|-----|
 | `pydantic` | Data validation + models | Built into FastAPI. Type-safe request/response. |
 | `sqlalchemy` | ORM for database | Works with SQLite and PostgreSQL. Clean abstraction. |
-| `langchain` + `langchain-openai` | LLM integration + agent framework | Structured output, ReAct agent for Mentor, tool-calling. |
+| `langchain`, `langgraph`, `langserve` | LLM integration, stateful agents, API | Structured output, stateful AI Mentor (LangGraph), built-in API playgrounds (LangServe). |
 | `chromadb` | Vector database (embedded) | Zero-infra vector search. Runs in-process. |
 | `sentence-transformers` | Local embeddings (fallback) | Free embeddings if OpenAI quota runs out. |
 | `python-dotenv` | Environment variables | Load `.env` for API keys. |
@@ -187,7 +187,7 @@ pathfinder/
 | **LLM Provider** | OpenAI GPT-4o-mini | Best balance of quality/cost/speed. JSON mode for structured output. Function calling for agent. $0.15/1M input tokens. | Google Gemini 1.5 Flash (free tier, slightly less reliable structured output), Groq (fast, free tier, limited models) |
 | **Embeddings** | OpenAI `text-embedding-3-small` | 1536 dimensions, $0.02/1M tokens, excellent quality. Same API key as LLM. | `all-MiniLM-L6-v2` via sentence-transformers (free, local, 384 dims, slightly lower quality) |
 | **Vector DB** | ChromaDB (embedded mode) | Zero infrastructure. `pip install chromadb`. Runs in-process with SQLite backend. Supports metadata filtering. | Pinecone (cloud, free tier but requires signup), FAISS (no metadata filtering), Qdrant (heavier) |
-| **Agent Framework** | LangChain + LangGraph | ReAct agent pattern for Mentor. Tool definitions. Structured output parsing. Well-documented. | Raw OpenAI function calling (simpler but less structured), CrewAI (overkill for one agent) |
+| **Agent Framework** | LangGraph + LangChain | Stateful graph-based agent pattern for Mentor. Maintains complex conversational state and routes tools deterministically. | Raw OpenAI function calling (simpler but less structured), CrewAI (overkill for one agent) |
 
 **LLM Abstraction Layer Design:**
 ```python
@@ -552,8 +552,8 @@ class SkillGapEngine:
 │         ▼               ▼               ▼                    │
 │  ┌────────────┐  ┌────────────┐  ┌──────────────┐           │
 │  │ Onboarding │  │ Explanation│  │  AI Mentor   │           │
-│  │ NLU        │  │ Generator  │  │  ReAct Agent │           │
-│  │            │  │            │  │              │           │
+│  │ NLU        │  │ Generator  │  │  LangGraph   │           │
+│  │            │  │            │  │  State Agent │           │
 │  │ Input:     │  │ Input:     │  │ Tools:       │           │
 │  │ chat text  │  │ score data │  │ get_progress │           │
 │  │            │  │            │  │ get_skill_gap│           │
@@ -597,7 +597,7 @@ class SkillGapEngine:
 | Timeline generation | — | Duration accumulation | Pure math |
 | Adaptation | — | Rule-based trigger engine | Must be predictable |
 | NBA | — | State machine | Deterministic per state |
-| Mentor | ReAct agent (LLM + tools) | — | Needs reasoning + tool-calling |
+| Mentor | LangGraph Stateful Agent | — | Needs reasoning, state memory + tool-calling |
 
 ---
 

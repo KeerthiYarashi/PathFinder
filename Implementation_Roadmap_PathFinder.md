@@ -43,7 +43,7 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Parallel Development:** Frontend can start building UI components (Phase 11) using mock data.
 
 ### Phase 4 & 5 — Goal, Skill Extraction & Learner Profiling
-*   **Tasks:** Implement the Onboarding LLM chain using Structured Outputs to parse chat history into a `LearnerProfile`.
+*   **Tasks:** Implement the Onboarding LLM chain using LangChain `with_structured_output` to parse chat history into a Pydantic `LearnerProfile`.
 *   **Files/Modules to create:**
     *   `backend/api/v1/onboarding.py`
     *   Prompt templates in `services/llm.py`
@@ -62,8 +62,8 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Acceptance Criteria:** Given a learner with Python Level 2 and a target requiring Python Level 3, the engine returns a gap of 1 with medium priority.
 *   **Estimated Difficulty:** Medium (Prioritization math).
 
-### Phase 7 — Recommendation Engine
-*   **Tasks:** Implement hybrid retrieval (ChromaDB semantic search + Metadata filtering) and the multi-factor scoring formula.
+### Phase 7 — Hybrid Search & Recommendation Scoring
+*   **Tasks:** Implement Hybrid Search (ChromaDB semantic search + explicit Metadata filtering) and the multi-factor scoring formula.
 *   **Files/Modules to create:**
     *   `backend/engines/recommendation.py`
     *   `backend/services/vector_store.py`
@@ -81,18 +81,18 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Acceptance Criteria:** The generated path never violates a prerequisite constraint (e.g., Math is ALWAYS before ML).
 *   **Estimated Difficulty:** High (Graph traversal logic).
 
-### Phase 9 — AI Mentor
-*   **Tasks:** Implement the LangChain ReAct agent with specific tools (`get_skill_gap`, `explain_score`).
+### Phase 9 — LangGraph Stateful Mentor & LangServe
+*   **Tasks:** Implement a LangGraph stateful agent for the Mentor, add custom tools, and expose it via LangServe.
 *   **Files/Modules to create:**
     *   `backend/services/mentor_agent.py`
-    *   `backend/api/v1/mentor.py`
+    *   `backend/api/v1/mentor.py` (LangServe routes)
 *   **Dependencies:** Phase 6 (Skill-Gap).
 *   **Expected Output:** Conversational endpoint for the Mentor UI.
 *   **Acceptance Criteria:** Agent can accurately answer "Why is Statistics in my path?" by calling the `get_skill_gap` tool.
 *   **Estimated Difficulty:** High (Agent reliability and hallucination prevention).
 
-### Phase 10 — Progress & Adaptation
-*   **Tasks:** Implement the progress tracking endpoint (`POST /action`) and the rule-based triggers for "Struggling" and "Skip".
+### Phase 10 — Progress & Adaptation (Plus RAG Assessments)
+*   **Tasks:** Implement progress tracking (`POST /action`), the rule-based "Struggling" triggers, and the LangChain RetrievalQA chain for RAG-powered dynamic quiz assessments.
 *   **Files/Modules to create:**
     *   `backend/api/v1/modules.py`
     *   `backend/engines/adaptive.py`

@@ -63,9 +63,9 @@ Resources are structured with metadata for deterministic filtering and semantic 
 ## 3. Learner Intelligence
 
 ### 3.1 Skill Extraction from Natural-Language Goals
-**Mechanism:** LLM with Forced JSON Output (Function Calling / Structured Outputs)
+**Mechanism:** LangChain `with_structured_output` using Pydantic Models.
 **Input:** Chat history + User Goal ("I know some python but want to become an ML engineer")
-**Prompting Strategy:** System prompt provides the expected JSON schema. LLM extracts the `target_role`, self-assessed `current_skills`, `time_budget`, and `experience_level`. If ambiguous, LLM generates a targeted follow-up question.
+**Prompting Strategy:** System prompt directs the LLM to map inputs to the `LearnerProfile` Pydantic class. LangChain automatically enforces the schema and handles validation parsing for `target_role`, `current_skills`, `time_budget`, and `experience_level`.
 
 ### 3.2 Learner Profiling (Continuous State)
 The learner profile is a dynamic state machine that updates as the learner progresses.
@@ -85,7 +85,7 @@ The learner profile is a dynamic state machine that updates as the learner progr
 
 ---
 
-## 4. Recommendation Engine (Hybrid Semantic + Algorithmic)
+## 4. Recommendation Engine (Hybrid Search + Algorithmic)
 
 The recommendation engine answers: *"For this specific skill gap, what is the best resource for THIS learner?"*
 
@@ -131,8 +131,8 @@ Final_Score = (
 *   **Milestones:** Inserted programmatically when a cluster of related skills (e.g., all "Data Analysis" nodes) is completed.
 *   **Project Recommendation:** At a milestone, the recommendation engine queries ChromaDB specifically for `format_type="project"`, filtering for projects that cover >= 70% of the newly acquired skills.
 
-### 5.3 Assessment Recommendation
-After completing a module, the system retrieves a quick 3-question MCQ quiz tagged with that specific `skill_id`. (MVP: Generated dynamically by LLM using the skill/level context; Future: Curated vector DB of questions).
+### 5.3 Assessment Recommendation (RAG)
+After completing a module, the system uses a **RetrievalQA (RAG) Chain**. LangChain queries ChromaDB for the transcript/description of the specific module just completed and generates a highly targeted 3-question MCQ quiz based *strictly* on that retrieved content to eliminate hallucinations.
 
 ---
 
@@ -158,8 +158,8 @@ Every recommendation requires an explanation. We do NOT ask the LLM to invent an
 *   *Template Approach:* "This fits your goal because it covers [Skill]. It matches your [Difficulty] level and fits your [X hours] budget."
 *   *LLM Approach:* `Prompt: Explain this recommendation to the user using these exact scoring factors: {scoring_dict}`.
 
-### 7.2 AI Mentor (LangChain ReAct Agent)
-The Mentor is an Agentic LLM with access to specific tools.
+### 7.2 AI Mentor (LangGraph Stateful Agent)
+The Mentor is built using **LangGraph** to maintain complex conversational states. It has access to specific tools via LangChain.
 *   **Context Window:** Learner Profile, current `mastery_map`, current Path, current active module.
 *   **Tools (Functions):** `get_skill_gap()`, `explain_score(module_id)`, `trigger_recalculation()`, `insert_refresher(skill_id)`.
 *   **Workflow:** User asks "Why am I learning Math?". Agent uses `get_skill_gap` to see Math is a prereq for ML, and explains it contextually.
@@ -177,7 +177,7 @@ The Mentor is an Agentic LLM with access to specific tools.
 graph TD
     subgraph Natural Language Layer
         UI[User Input / Chat / Resume] --> Extractor[LLM Profile Extractor]
-        Mentor[AI Mentor - ReAct Agent] --> UO[User Output]
+        Mentor[AI Mentor - LangGraph State Agent] --> UO[User Output]
     end
 
     subgraph Deterministic Core
