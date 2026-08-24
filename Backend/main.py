@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from core.config import settings
 
-from api.v1 import learner
+from api.v1 import learner, onboarding, path, mentor, modules
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -28,5 +28,7 @@ def health_check():
 
 # API Routers
 app.include_router(learner.router, prefix=f"{settings.API_V1_STR}/learners", tags=["learners"])
-# app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding", tags=["onboarding"])
-# app.include_router(path.router, prefix=f"{settings.API_V1_STR}/paths", tags=["paths"])
+app.include_router(onboarding.router, prefix=f"{settings.API_V1_STR}/onboarding", tags=["onboarding"])
+app.include_router(path.router, prefix=f"{settings.API_V1_STR}/paths", tags=["paths"])
+app.include_router(mentor.router, prefix=f"{settings.API_V1_STR}/mentor", tags=["mentor"])
+app.include_router(modules.router, prefix=f"{settings.API_V1_STR}/modules", tags=["modules"])

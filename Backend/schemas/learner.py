@@ -29,3 +29,9 @@ class LearnerResponse(LearnerBase):
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+class ExtractedProfile(BaseModel):
+    target_role: str
+    current_skills: dict[str, int]
+    time_budget_hours: float
+    difficulty_tolerance: str
