@@ -38,9 +38,9 @@ PathFinder is a **monolithic-ish** web application with a clear frontend/backend
 │            │              │             │                 │
 │            ▼              ▼             ▼                 │
 │   ┌──────────┐   ┌──────────┐   ┌───────────┐           │
-│   │ Postgres │   │ ChromaDB │   │ LLM API   │           │
-│   │ (SQLite  │   │ (local)  │   │ (OpenAI / │           │
-│   │  for MVP)│   │          │   │  Gemini)  │           │
+│   │ Supabase │   │ Supabase │   │ LLM API   │           │
+│   │ Postgres │   │ pgvector │   │ (OpenAI / │           │
+│   │ (+ Auth) │   │ (Vectors)│   │  Gemini)  │           │
 │   └──────────┘   └──────────┘   └───────────┘           │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -48,8 +48,8 @@ PathFinder is a **monolithic-ish** web application with a clear frontend/backend
 **Key Decisions:**
 - **Two deployable units** (frontend + backend), not microservices
 - **All engines are Python modules** inside one FastAPI app, not separate services
-- **Database starts as SQLite** (zero setup) with clean abstractions to swap to PostgreSQL
-- **ChromaDB runs in-process** (embedded mode) — no separate server needed
+- **Database is Supabase PostgreSQL** — cloud-native, unified database for relational and vector data.
+- **Vector search uses Supabase pgvector** — no separate local vector database needed.
 - **LLM calls go through a single abstraction layer** — swap OpenAI for Gemini with one config change
 
 ---
@@ -109,17 +109,16 @@ pathfinder/
 │   │   ├── path.py              # Path/module models
 │   │   └── assessment.py        # Assessment models
 │   ├── db/
-│   │   ├── database.py          # DB connection (SQLite/Postgres)
-│   │   ├── crud.py              # CRUD operations
-│   │   └── models.py            # SQLAlchemy ORM models
+│   │   ├── database.py          # Supabase client setup
+│   │   └── crud.py              # Supabase API operations
 │   └── data/
 │       ├── skill_taxonomy.json  # Roles → skills → proficiency
 │       ├── prerequisites.json   # Skill prerequisite graph
 │       └── resources.json       # 50-80 curated learning resources
 │
 ├── scripts/
-│   ├── seed_vectordb.py         # Seed ChromaDB with resource embeddings
-│   └── seed_db.py               # Seed database with initial data
+│   ├── seed_supabase.py         # Seed Supabase DB and pgvector
+│   └── setup_pgvector.sql       # SQL for Supabase RPC functions
 │
 ├── .env                         # API keys, config
 ├── docker-compose.yml           # Optional: Postgres + app
@@ -170,9 +169,9 @@ pathfinder/
 | Library | Purpose | Why |
 |---------|---------|-----|
 | `pydantic` | Data validation + models | Built into FastAPI. Type-safe request/response. |
-| `sqlalchemy` | ORM for database | Works with SQLite and PostgreSQL. Clean abstraction. |
+| `supabase` | Supabase Python SDK | Unified client for Auth and PostgreSQL CRUD. |
 | `langchain`, `langgraph` | LLM integration, stateful agents | Structured output, stateful AI Mentor (LangGraph) integrated inside FastAPI. |
-| `chromadb` | Vector database (embedded) | Zero-infra vector search. Runs in-process. |
+| `langchain-postgres` | Vector database integration | Provides `PGVectorStore` to interact directly with Supabase pgvector. |
 | `sentence-transformers` | Local embeddings (fallback) | Free embeddings if OpenAI quota runs out. |
 | `python-dotenv` | Environment variables | Load `.env` for API keys. |
 | `pdfplumber` | PDF text extraction | Better than PyPDF2 for structured PDFs. |
@@ -180,13 +179,11 @@ pathfinder/
 
 ---
 
-### 3C. AI: LLM + Embeddings + Semantic Search
-
 | Component | Technology | Why | Alternative |
 |-----------|-----------|-----|------------|
 | **LLM Provider** | OpenAI GPT-4o-mini | Best balance of quality/cost/speed. JSON mode for structured output. Function calling for agent. $0.15/1M input tokens. | Google Gemini 1.5 Flash (free tier, slightly less reliable structured output), Groq (fast, free tier, limited models) |
 | **Embeddings** | OpenAI `text-embedding-3-small` | 1536 dimensions, $0.02/1M tokens, excellent quality. Same API key as LLM. | `all-MiniLM-L6-v2` via sentence-transformers (free, local, 384 dims, slightly lower quality) |
-| **Vector DB** | ChromaDB (embedded mode) | Zero infrastructure. `pip install chromadb`. Runs in-process with SQLite backend. Supports metadata filtering. | Pinecone (cloud, free tier but requires signup), FAISS (no metadata filtering), Qdrant (heavier) |
+| **Vector DB** | Supabase pgvector | Unified inside PostgreSQL. LangChain `PGVectorStore` handles vector search via SQL. | ChromaDB (local), Pinecone (cloud) |
 | **Agent Framework** | LangGraph + LangChain | Stateful graph-based agent pattern for Mentor. Maintains complex conversational state and routes tools deterministically. | Raw OpenAI function calling (simpler but less structured), CrewAI (overkill for one agent) |
 
 **LLM Abstraction Layer Design:**
@@ -216,111 +213,110 @@ class LLMService:
 
 ---
 
-### 3D. Database: SQLite (MVP) → PostgreSQL (Production Path)
+### 3D. Database: Supabase (PostgreSQL)
 
 | Criterion | Evaluation |
 |-----------|-----------|
-| **Why we need it** | Persist learner profiles, learner state, path data, assessment results, activity logs. |
-| **Why SQLite for MVP** | Zero setup. No server process. File-based. Ships with Python. Perfect for single-user hackathon demo. |
-| **Why PostgreSQL is the production path** | Multi-user, concurrent writes, JSONB for flexible learner state, full-text search, cloud deployment. |
-| **How to keep the door open** | Use SQLAlchemy ORM. All queries go through the ORM. Swap `sqlite:///pathfinder.db` to `postgresql://...` in one line of config. |
-| **Trade-offs** | SQLite has no concurrent write support — fine for one demo user, bad for production. |
-| **Hackathon Fit** | SQLite is perfect. Zero config, zero deployment friction. |
+| **Why we need it** | Persist learner profiles, learner state, path data, assessment results, activity logs, and vector embeddings. |
+| **Why Supabase** | Provides a production-ready PostgreSQL database with an easy-to-use Python client. Unifies relational data, JSONB documents, and vector embeddings (`pgvector`) in one place. |
+| **Trade-offs** | Requires creating a cloud project and managing SQL schemas, which adds slightly more setup time compared to local SQLite. |
+| **Hackathon Fit** | Excellent. It looks professional, scales instantly, and solves authentication, relational DB, and vector DB simultaneously. |
 
 **Database Schema:**
 
 ```sql
 -- Core tables
 CREATE TABLE learners (
-    id TEXT PRIMARY KEY DEFAULT (lower(hex(randomblob(4)))),
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES auth.users(id), -- Supabase Auth link
     goal TEXT NOT NULL,
     target_role TEXT NOT NULL,
-    current_skills JSON NOT NULL,       -- [{"skill_id": "python", "level": 2}]
+    current_skills JSONB NOT NULL,       -- [{"skill_id": "python", "level": 2}]
     time_budget_hours INTEGER NOT NULL,
     deadline_months INTEGER,
     experience_level TEXT NOT NULL,
     preferred_format TEXT DEFAULT 'mixed',
-    learner_state JSON NOT NULL,        -- Full continuous state object
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    learner_state JSONB NOT NULL,        -- Full continuous state object
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE learning_paths (
-    id TEXT PRIMARY KEY,
-    learner_id TEXT REFERENCES learners(id),
-    modules JSON NOT NULL,              -- Ordered list of modules
-    milestones JSON NOT NULL,           -- Milestone definitions
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    learner_id UUID REFERENCES learners(id),
+    modules JSONB NOT NULL,              -- Ordered list of modules
+    milestones JSONB NOT NULL,           -- Milestone definitions
     estimated_completion TEXT,
     version INTEGER DEFAULT 1,          -- Increments on recalculation
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE module_actions (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    learner_id TEXT REFERENCES learners(id),
+    id SERIAL PRIMARY KEY,
+    learner_id UUID REFERENCES learners(id),
     module_id TEXT NOT NULL,
     action TEXT NOT NULL,               -- start | complete | skip | struggling
     score INTEGER,                      -- Assessment score (if applicable)
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE chat_history (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    learner_id TEXT REFERENCES learners(id),
+    id SERIAL PRIMARY KEY,
+    learner_id UUID REFERENCES learners(id),
     role TEXT NOT NULL,                  -- user | assistant | system
     content TEXT NOT NULL,
     chat_type TEXT NOT NULL,             -- onboarding | mentor
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 ```
 
-**Why JSON columns:** The learner state is deeply nested and changes structure during development. JSON columns (SQLite JSON1 / PostgreSQL JSONB) let us iterate without migrations.
+**Why JSONB columns:** The learner state and modules are deeply nested and change structure during development. PostgreSQL's `JSONB` columns let us iterate without complex migrations while maintaining full querying capability.
 
 ---
 
-### 3E. Vector Search: ChromaDB (Embedded)
+### 3E. Vector Search: Supabase pgvector
 
 | Criterion | Evaluation |
 |-----------|-----------|
 | **Why we need it** | Semantic search over learning resources. "Find courses about statistics for beginners" should match even if the course title says "Probability and Data Analysis". |
-| **Why ChromaDB** | `pip install chromadb`. No server. Runs in-process. Supports metadata filtering (difficulty, type, duration). Persistent storage to disk. |
-| **How it works** | At startup, `seed_vectordb.py` embeds all 50-80 resources and stores them. At query time, the Recommendation Engine searches by skill concept + filters by metadata. |
-| **Alternatives** | FAISS (no metadata filtering, manual persistence), Pinecone (cloud, free tier, adds external dependency), Qdrant (heavier, Docker required). |
-| **Trade-offs** | ChromaDB is not production-grade for millions of vectors. But for 50-80 resources, it is absurdly fast and simple. |
+| **Why pgvector** | Unifies vector storage with the main database. LangChain's `PGVectorStore` provides out-of-the-box integration. No need to manage a separate vector database. |
+| **How it works** | At startup, `seed_supabase.py` embeds all 50-80 resources and stores them via LangChain in Supabase. At query time, the Recommendation Engine searches by skill concept + filters by metadata using `PGVectorStore.similarity_search`. |
+| **Trade-offs** | Requires creating the pgvector extension and RPC functions in Supabase via SQL scripts before LangChain can connect. |
 
-**Seeding Script:**
+**Seeding Script (Conceptual):**
 ```python
-# scripts/seed_vectordb.py
-import chromadb
+# scripts/seed_supabase.py
 import json
+from langchain_openai import OpenAIEmbeddings
+from langchain_postgres import PGVectorStore
 
-client = chromadb.PersistentClient(path="./chroma_data")
-collection = client.get_or_create_collection("learning_resources")
+# Supabase Postgres connection string
+connection_string = "postgresql://postgres.[PROJECT-REF]:[PASSWORD]@aws-0-[REGION].pooler.supabase.com:6543/postgres"
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
+vector_store = PGVectorStore(
+    embeddings=embeddings,
+    collection_name="learning_resources",
+    connection=connection_string,
+    use_jsonb=True,
+)
 
 with open("backend/data/resources.json") as f:
     resources = json.load(f)
 
-collection.add(
-    ids=[r["id"] for r in resources],
-    documents=[f"{r['title']}. {r['description']}. Skills: {', '.join(r['skills'])}" for r in resources],
-    metadatas=[{
-        "difficulty": r["difficulty"],
-        "type": r["type"],
-        "duration_hours": r["duration_hours"],
-        "skills": ",".join(r["skills"])
-    } for r in resources]
-)
+# Convert JSON to LangChain Documents and add_documents()
+...
 ```
 
 ---
 
-### 3F. Authentication: None (MVP) → Simple Token (If Needed)
+### 3F. Authentication: Supabase Auth
 
 | Criterion | Evaluation |
 |-----------|-----------|
-| **Why skip auth for MVP** | Single demo user. No multi-user support needed. Auth adds zero demo value and costs development time. |
-| **If we need it later** | Simple API key in header (`X-Learner-ID: learner_001`). No OAuth, no JWT, no sessions. |
-| **For judges** | If asked about auth, say: "We scoped auth as a non-goal for the prototype. Our architecture supports adding JWT via FastAPI's dependency injection in production." |
+| **Why Supabase Auth** | Hackathon judges love real authentication. Provides secure sign-in (Email/Google) without writing custom security logic. |
+| **How it integrates** | Frontend uses `@supabase/supabase-js` to log in and get a JWT. FastAPI backend uses a dependency `Depends(verify_supabase_jwt)` to decode the token and identify the user. |
+| **For judges** | "We use Supabase Auth to securely issue JWTs, which our FastAPI backend verifies, ensuring data privacy across the unified PostgreSQL database." |
 
 ---
 
@@ -565,7 +561,7 @@ class SkillGapEngine:
 │                                                             │
 │  ┌──────────────────────────────────────────────────────┐   │
 │  │              EMBEDDING + VECTOR SEARCH                │   │
-│  │   embeddings.py — ChromaDB interface                  │   │
+│  │   embeddings.py — Supabase pgvector interface         │   │
 │  │                                                       │   │
 │  │   Methods:                                            │   │
 │  │   ├── search_resources(query, filters) → results[]    │   │
@@ -612,10 +608,10 @@ class SkillGapEngine:
 │  ┌───────────────────────────────────────────┐    │
 │  │  STAGE 1: RETRIEVAL (AI)                   │    │
 │  │                                           │    │
-│  │  ChromaDB.query(                          │    │
-│  │    query_text = skill_gap.name,           │    │
-│  │    n_results = 10,                        │    │
-│  │    where = {                              │    │
+│  │  PGVectorStore.similarity_search(         │    │
+│  │    query = skill_gap.name,                │    │
+│  │    k = 10,                                │    │
+│  │    filter = {                             │    │
 │  │      "difficulty": {"$in": [level, +-1]}, │    │
 │  │      "duration_hours": {"$lte": budget}   │    │
 │  │    }                                      │    │
@@ -1059,7 +1055,7 @@ Frontend calls POST /learning-path/{learner_id}/generate
     │
     ▼
 Backend:
-  1. RecommendationEngine.retrieve(gap_skills) → ChromaDB semantic search
+  1. RecommendationEngine.retrieve(gap_skills) → pgvector semantic search
   2. RecommendationEngine.score(candidates, learner_state) → ranked resources
   3. PathGenerator.generate(gaps, resources, weekly_hours) → ordered path
   4. LLMService.explain_recommendation(scoring) → explanation text per module
@@ -1110,10 +1106,10 @@ Frontend:
 | LLM API timeout | Backend → LLM | Retry once (3s timeout), then return cached/fallback response | Slight delay, graceful degradation |
 | LLM API rate limit | Backend → LLM | Queue request, retry after backoff, fallback to simpler prompt | "Processing... please wait" |
 | LLM returns invalid JSON | Backend → LLM | Retry with stricter prompt, then return partial profile + ask for manual input | "I couldn't fully understand. Could you clarify [specific field]?" |
-| ChromaDB search returns 0 results | Backend → ChromaDB | Broaden search (remove filters), then fallback to random resource for that skill | "I found a general resource for this topic" |
+| pgvector search returns 0 results | Backend → pgvector | Broaden search (remove filters), then fallback to random resource for that skill | "I found a general resource for this topic" |
 | Database write fails | Backend → DB | Retry once, then return error | "Something went wrong saving. Please try again." |
 | Frontend API call fails | Frontend → Backend | Show toast error, retain current state, allow retry | "Connection issue. Retrying..." |
-| Invalid learner_id | Backend → API | Return 404 with clear message | Redirect to onboarding |
+| Invalid Auth Token | Backend → Supabase | Return 401 Unauthorized | Redirect to login |
 | Prerequisite graph has cycle | Backend → PathGen | Detect cycle, break at weakest edge, log warning | Path generated with warning |
 
 ### Backend Error Response Format
@@ -1174,14 +1170,14 @@ logger.info(f"NBA updated: {nba.type} - {nba.title}")
 
 | Concern | Current (Hackathon) | Production Path |
 |---------|---------------------|-----------------|
-| Database | SQLite (1 user) | PostgreSQL (multi-user, connection pooling) |
-| Vector DB | ChromaDB embedded (80 resources) | Pinecone or Qdrant (millions of resources) |
+| Database | Supabase (PostgreSQL) | Supabase (PostgreSQL with read replicas) |
+| Vector DB | Supabase pgvector | Supabase pgvector or dedicated Pinecone if millions of vectors |
 | LLM calls | Direct API calls | Queue + cache layer (Redis) |
 | Concurrent users | 1 | FastAPI async + horizontal scaling |
 | Resource DB | 50-80 JSON entries | Postgres + regular web scraping pipeline |
 | Caching | None | Redis for LLM responses, dashboard data |
 
-**Judge-ready answer:** "We designed the architecture with clean abstractions — the DB, vector store, and LLM provider are all behind interfaces. Swapping SQLite for PostgreSQL is a one-line config change. The engines are stateless pure functions, so horizontal scaling is straightforward."
+**Judge-ready answer:** "We designed the architecture natively on Supabase, giving us a unified PostgreSQL database that handles authentication, relational data, and vector embeddings (`pgvector`). The engines are stateless pure functions in FastAPI, so horizontal scaling is straightforward, and we avoid the DevOps overhead of managing separate vector and auth servers."
 
 ---
 
@@ -1197,12 +1193,13 @@ logger.info(f"NBA updated: {nba.type} - {nba.title}")
 | **State** | Zustand | 4+ | Minimal boilerplate state management |
 | **Backend** | FastAPI | 0.100+ | Async, auto-docs, Pydantic validation |
 | **Language** | Python | 3.11+ | AI ecosystem, f-strings, type hints |
-| **ORM** | SQLAlchemy | 2+ | DB abstraction (SQLite ↔ PostgreSQL) |
-| **Database** | SQLite | 3 | Zero setup, file-based, hackathon speed |
-| **Vector DB** | ChromaDB | 0.4+ | Embedded, zero infra, metadata filtering |
+| **Database/Auth** | Supabase SDK | 2+ | Unified Python client for Auth and DB |
+| **Database** | PostgreSQL | 15+ | Hosted on Supabase, unified relational+vectors |
+| **Vector DB** | pgvector | 0.5+ | PostgreSQL extension for vector search |
 | **LLM** | OpenAI GPT-4o-mini | — | Quality/cost/speed balance, JSON mode, function calling |
 | **Embeddings** | OpenAI text-embedding-3-small | — | 1536 dims, same API key, cheap |
 | **Agent** | LangChain + LangGraph | 0.2+ | ReAct agent, tool definitions, structured output |
+| **Vector Integration**| langchain-postgres | — | `PGVectorStore` integration |
 | **PDF** | pdfplumber | 0.10+ | Better than PyPDF2 for structured text |
 | **Deployment** | Local (primary) | — | Zero friction for demo |
 | **Backup Deploy** | Vercel + Render | Free tier | If remote URL needed |
@@ -1243,9 +1240,9 @@ graph TB
         MA["Mentor Agent<br/>(LangChain ReAct)"]
     end
 
-    subgraph "Data Layer"
-        SQLite["SQLite Database"]
-        Chroma["ChromaDB<br/>(Vector Store)"]
+    subgraph "Data Layer (Supabase)"
+        Postgres["Supabase PostgreSQL<br/>(Relational)"]
+        pgvector["Supabase pgvector<br/>(Vector Store)"]
         JSON["Static Data<br/>(Taxonomy, Prereqs, Resources)"]
     end
 
@@ -1266,15 +1263,15 @@ graph TB
 
     SGE --> JSON
     RE --> EMB
-    RE --> Chroma
+    RE --> pgvector
     PGE --> JSON
-    AE --> SQLite
+    AE --> Postgres
 
     API --> LLM
     MA --> LLM
-    EMB --> Chroma
+    EMB --> pgvector
 
-    API --> SQLite
+    API --> Postgres
 
     OC -->|"Profile Confirmed"| SGA
     SGA -->|"Generate Path"| DB
@@ -1350,8 +1347,8 @@ graph TB
 | 0.4 | Curate `skill_taxonomy.json` (3-4 roles, ~30 skills) | 1 hr | None |
 | 0.5 | Curate `prerequisites.json` (skill dependency graph) | 30 min | 0.4 |
 | 0.6 | Curate `resources.json` (50-80 courses with metadata) | 1.5 hr | 0.4 |
-| 0.7 | Run `seed_vectordb.py` to embed resources into ChromaDB | 10 min | 0.6 |
-| 0.8 | Set up SQLite + SQLAlchemy models | 30 min | None |
+| 0.7 | Run `seed_supabase.py` to embed resources into pgvector | 10 min | 0.6 |
+| 0.8 | Set up Supabase PostgreSQL tables and Auth logic | 30 min | None |
 
 ### Phase 1: Core Engines (Day 1 Afternoon)
 
@@ -1417,8 +1414,8 @@ graph TB
 
 | Member | Role | Owns | Phase Focus |
 |--------|------|------|-------------|
-| **Person A** | Backend Lead + AI | All engines (skill-gap, recommendation, path gen, adaptive, NBA), LLM service, ChromaDB setup | Phase 0 (data), Phase 1 (engines), Phase 2 (API) |
-| **Person B** | Backend + AI Mentor | API endpoints, mentor agent (LangChain), assessment, database | Phase 0 (DB), Phase 2 (API), Phase 5 (mentor) |
+| **Person A** | Backend Lead + AI | All engines (skill-gap, recommendation, path gen, adaptive, NBA), LLM service, Supabase DB setup | Phase 0 (data), Phase 1 (engines), Phase 2 (API) |
+| **Person B** | Backend + AI Mentor | API endpoints, mentor agent (LangChain), assessment, Supabase Auth | Phase 0 (DB), Phase 2 (API), Phase 5 (mentor) |
 | **Person C** | Frontend Lead | Dashboard, path timeline, radar chart, module detail, recalculation overlay | Phase 3 (core UI), Phase 4 (intelligence UI) |
 | **Person D** | Frontend + UX | Landing page, onboarding chat, explanation card, UI polish, dark mode, animations | Phase 3 (onboarding), Phase 5 (polish) |
 
@@ -1427,8 +1424,8 @@ graph TB
 | Member | Role | Owns |
 |--------|------|------|
 | **Person A** | Engine Architect | Skill-gap, recommendation, path generator engines |
-| **Person B** | Backend + API | FastAPI endpoints, database, CRUD, data curation |
-| **Person C** | AI Specialist | LLM service, ChromaDB, embeddings, mentor agent, explanation generation |
+| **Person B** | Backend + API | FastAPI endpoints, Supabase DB, CRUD, data curation |
+| **Person C** | AI Specialist | LLM service, Supabase pgvector setup, embeddings, mentor agent, explanation generation |
 | **Person D** | Frontend Lead | Dashboard, path timeline, radar chart, recalculation overlay |
 | **Person E** | Frontend + Onboarding | Landing page, onboarding chat, module detail, explanation card, UI polish |
 

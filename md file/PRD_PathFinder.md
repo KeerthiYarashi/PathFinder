@@ -163,7 +163,7 @@ PathFinder envisions a world where **every learner has a personal AI tutor** tha
 | Difficulty tolerance | Performance patterns | After assessments |
 | Struggle/skip history | Module actions | On struggle/skip |
 
-**Storage:** JSON file or SQLite for the prototype. No complex DB needed.
+**Storage:** JSON file or Supabase for the prototype. No complex DB needed.
 
 ---
 
@@ -190,7 +190,7 @@ PathFinder envisions a world where **every learner has a personal AI tutor** tha
 **Two-Stage Pipeline:**
 
 **Stage 1 — Retrieval:**
-- Semantic similarity search (embeddings + vector DB like ChromaDB) finds candidate resources matching the skill gap
+- Semantic similarity search (embeddings + Supabase pgvector) finds candidate resources matching the skill gap
 - Metadata filters narrow by difficulty, duration, and resource type
 
 **Stage 2 — Ranking (Multi-Factor Scoring):**
@@ -814,8 +814,8 @@ These are the features that **must** be demonstrable in the hackathon demo:
 | Backend | Python (FastAPI) |
 | LLM | OpenAI GPT-4o-mini or Google Gemini API |
 | Embeddings | sentence-transformers or OpenAI embeddings |
-| Vector DB | ChromaDB (local, no infra needed) |
-| Data Storage | JSON files or SQLite |
+| Vector DB | Supabase pgvector |
+| Data Storage | JSON files or Supabase PostgreSQL |
 | Charts | Chart.js or Recharts (for radar chart) |
 | Deployment | Local demo (localhost) |
 
@@ -971,7 +971,7 @@ These are the features that **must** be demonstrable in the hackathon demo:
 | What Judges Look For | How PathFinder Addresses It |
 |---------------------|---------------------------|
 | Clean, modular code | Separated components: onboarding, engine, dashboard, mentor |
-| Appropriate technology choices | FastAPI (fast, async) + React (component-based) + ChromaDB (lightweight vector DB) |
+| Appropriate technology choices | FastAPI (fast, async) + React (component-based) + Supabase pgvector |
 | Error handling | Fallback responses for LLM failures, profile confirmation step, mentor confirmation for state changes |
 | Performance | Path generation under 30 seconds, mentor response under 10 seconds |
 
@@ -984,7 +984,7 @@ These are the features that **must** be demonstrable in the hackathon demo:
 | Skill Taxonomy | JSON | ~200 skills across 3-4 roles | Maps roles to required skills with proficiency levels |
 | Prerequisite Graph | JSON (adjacency list) | ~100 edges | Defines skill dependencies for topological sort |
 | Learning Resources | JSON | ~50-80 curated entries | Course/resource metadata: title, skills covered, difficulty, duration, type, URL |
-| Learner Profile | JSON / SQLite | Per user | Stores and evolves learner state |
+| Learner Profile | JSON / Supabase PostgreSQL | Per user | Stores and evolves learner state |
 
 ---
 
@@ -1048,7 +1048,7 @@ Web Application (React / Next.js)
            |
    Skill / Prerequisite Graph
            |
-  Semantic Resource Retrieval (ChromaDB)
+  Semantic Resource Retrieval (Supabase pgvector)
            |
    Recommendation Scoring (Multi-Factor Algorithm)
            |

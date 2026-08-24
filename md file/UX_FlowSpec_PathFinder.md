@@ -60,7 +60,7 @@ If any field cannot be determined, set it to null and ask ONE focused follow-up 
 
 | Step | User Action | System Action | AI Action | Data Required | Output Shown | Possible Errors | Next Step |
 |------|------------|---------------|-----------|---------------|-------------|-----------------|-----------|
-| 3.1 | Confirms profile in Flow 2 | Creates learner record in storage (JSON/SQLite) | None | Confirmed profile JSON | Success toast: "Profile saved!" | Storage write fails → retry | Initialize learner state |
+| 3.1 | Confirms profile in Flow 2 | Creates learner record in storage (JSON/Supabase) | None | Confirmed profile JSON | Success toast: "Profile saved!" | Storage write fails → retry | Initialize learner state |
 | 3.2 | None (automatic) | Initializes continuous learner state: all mastery levels set to current proficiency, empty assessment history, zero reward scores | None | Profile data | None (background) | None | Skill-Gap Analysis (Flow 6) |
 | 3.3 | None (automatic) | Maps user's current_skills to skill taxonomy entries using fuzzy matching | None if exact match; LLM for fuzzy matching | Profile skills + Skill Taxonomy JSON | None (background) | Skill not found in taxonomy → flag as "unrecognized", still proceed | Continue to gap analysis |
 
@@ -146,7 +146,7 @@ If the user types a goal not in the taxonomy (e.g., "I want to learn game design
 | Step | User Action | System Action | AI Action | Data Required | Output Shown | Possible Errors | Next Step |
 |------|------------|---------------|-----------|---------------|-------------|-----------------|-----------|
 | 7.1 | None (triggered from Flow 6) | Builds prerequisite subgraph from gap skills. Prunes known skills. Runs topological sort. | None | Gap skills + Prerequisite Graph JSON | Loading: "Building your personalized roadmap..." with animated path drawing | Graph has cycles → error log, use fallback linear ordering | Assign resources |
-| 7.2 | None (automatic) | For each skill in sorted order: queries Recommendation Engine (semantic retrieval + multi-factor scoring) to find best resource | Embeddings search via ChromaDB | Sorted skills + Resource DB + Learner profile | None (processing) | No matching resource → flag skill, use generic placeholder | Build timeline |
+| 7.2 | None (automatic) | For each skill in sorted order: queries Recommendation Engine (semantic retrieval + multi-factor scoring) to find best resource | Embeddings search via pgvector | Sorted skills + Resource DB + Learner profile | None (processing) | No matching resource → flag skill, use generic placeholder | Build timeline |
 | 7.3 | None (automatic) | Accumulates durations against weekly budget. Assigns each module to a week. Inserts milestones after skill clusters. Calculates completion date. | None | Resource durations + time budget + deadline | None (processing) | Completion date > deadline → generate warning | Render roadmap |
 | 7.4 | Views generated roadmap | Renders interactive timeline with modules, milestones, estimated dates, and status indicators | None | Complete path data | Visual timeline: "Week 1-2: Statistics Foundations → Week 3-4: Pandas & NumPy → ..." | None | Explore modules |
 | 7.5 | Clicks on any module in the timeline | Opens module detail panel (resource title, description, duration, difficulty, type, link, "Why This?" button) | None | Module resource data | Module detail card | None | Start learning or ask "Why This?" |

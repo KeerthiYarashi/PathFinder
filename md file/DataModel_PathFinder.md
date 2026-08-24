@@ -11,7 +11,7 @@ Handles all relational data, transactions, and exact-match filtering.
 *   **What goes here:** Learner profiles, structured taxonomy (skills, goals, prerequisites), learning paths, progress tracking, feedback logs, and resource metadata (titles, links, difficulty levels).
 *   **Why:** We need transactional integrity for learner progress and deterministic joins for skill-gap calculations.
 
-### 1.2 ChromaDB (The Semantic Engine)
+### 1.2 Supabase pgvector (The Semantic Engine)
 Handles unstructured text and semantic similarity retrieval.
 *   **What goes here:** Embeddings of the learning resources.
 *   **Vector Document:** A concatenated string of `Resource Title + Description + Syllabus + Skills Covered`.
@@ -176,9 +176,9 @@ The dataset will contain ~40 atomic skills linked in a DAG.
     document = f"Title: {res.title}. Description: {res.description}. Teaches skills: {', '.join(res.skills_covered)}."
     ```
 4.  It passes the document to OpenAI's `text-embedding-3-small` API to get a 1536-dimensional vector.
-5.  It inserts the vector and metadata into ChromaDB.
+5.  It inserts the vector and metadata into Supabase pgvector using `langchain-postgres`.
 
-### 4.2 Vector Document Structure (ChromaDB)
+### 4.2 Vector Document Structure (pgvector)
 ```json
 {
   "id": "res_104", // Matches PostgreSQL resource_id
@@ -439,4 +439,4 @@ CREATE TABLE recommendations_cache (
   }
 ]
 ```
-*Note: The "Refresher" type is crucial. When the Adaptation Engine detects the learner clicked "Struggling" on `ml_basics`, it queries the DAG, finds `math_probability` is a prerequisite, and queries ChromaDB for a `refresher` covering `math_probability` (like `refresher_prob`) to inject into the path.*
+*Note: The "Refresher" type is crucial. When the Adaptation Engine detects the learner clicked "Struggling" on `ml_basics`, it queries the DAG, finds `math_probability` is a prerequisite, and queries pgvector for a `refresher` covering `math_probability` (like `refresher_prob`) to inject into the path.*

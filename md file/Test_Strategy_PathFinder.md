@@ -21,13 +21,13 @@ Given the Hybrid AI Architecture, testing is divided into **Deterministic Testin
 
 ### 2.2 API Tests (Integration)
 *   **Scope:** All FastAPI endpoints (e.g., `/learners`, `/path/{id}/generate`).
-*   **Mocking:** Use an in-memory SQLite DB. Mock the `llm_service` and `chroma_client` to return static JSON.
+*   **Mocking:** Use a mock DB client or local PostgreSQL instance. Mock the `llm_service` and `vector_client` to return static JSON.
 
 ### 2.3 Database Tests
-*   **Scope:** SQLAlchemy ORM constraints, composite primary keys (e.g., preventing cycles in the Prerequisite table).
+*   **Scope:** PostgreSQL constraints, composite primary keys (e.g., preventing cycles in the Prerequisite table).
 
 ### 2.4 Recommendation-Engine Tests (Semantic)
-*   **Scope:** ChromaDB retrieval accuracy.
+*   **Scope:** pgvector retrieval accuracy.
 *   **Methodology:** Offline test using 20 predefined skill queries and checking if the top 5 retrieved resources match human-annotated IDs (NDCG@5 metric).
 
 ### 2.5 Skill-Gap Tests
@@ -55,7 +55,7 @@ Given the Hybrid AI Architecture, testing is divided into **Deterministic Testin
 *   **Scope:** FastAPI exception handlers, UI boundary fallbacks.
 
 ### 2.14 Performance Tests
-*   **Scope:** Path generation latency. (Target: < 2 seconds, despite LLM/Vector DB calls).
+*   **Scope:** Path generation latency. (Target: < 2 seconds, despite LLM/pgvector calls).
 
 ### 2.15 Security Tests
 *   **Scope:** JWT/Header spoofing, Prompt Injection attacks on the LLM.
@@ -78,7 +78,7 @@ Given the Hybrid AI Architecture, testing is divided into **Deterministic Testin
 
 ### Test Case 3: Missing Prerequisites in DB
 *   **Category:** Database / Path Generation
-*   **Input:** Learner needs "Statistics", but no resource teaching "Statistics" exists in ChromaDB.
+*   **Input:** Learner needs "Statistics", but no resource teaching "Statistics" exists in pgvector.
 *   **Expected Output:** The Path Generator handles the empty retrieval gracefully.
 *   **Pass/Fail Criteria:** Pass if the system generates the path with a placeholder module (e.g., "Statistics Module Needed") rather than crashing or skipping the skill entirely.
 
@@ -91,7 +91,7 @@ Given the Hybrid AI Architecture, testing is divided into **Deterministic Testin
 ### Test Case 5: LLM Hallucinations in Mentor Chat
 *   **Category:** Hallucination / Security
 *   **Input:** "Suggest a good course for Quantum Computing." (Assume Quantum Computing is NOT in our database).
-*   **Expected Output:** The agent queries ChromaDB (via tool), finds 0 results, and responds based on the system prompt constraints.
+*   **Expected Output:** The agent queries pgvector (via tool), finds 0 results, and responds based on the system prompt constraints.
 *   **Pass/Fail Criteria:** Pass if agent replies "I don't have recommendations for Quantum Computing in my current curriculum..." Fail if agent makes up a Coursera link.
 
 ### Test Case 6: Duplicate Recommendations
@@ -113,7 +113,7 @@ Given the Hybrid AI Architecture, testing is divided into **Deterministic Testin
 Run this checklist 2 hours before the hackathon presentation.
 
 ### Backend / Data
-- [ ] **Seed Data Verified:** Ensure `skills.json` and `resources.json` are fully loaded in SQLite and ChromaDB.
+- [ ] **Seed Data Verified:** Ensure `skills.json` and `resources.json` are fully loaded in Supabase (PostgreSQL and pgvector).
 - [ ] **API Health:** `/health` endpoint returns 200 OK.
 - [ ] **LLM API Keys:** Ensure OpenAI/Gemini keys are valid, funded, and loaded in `.env`.
 - [ ] **No Dead Links:** Spot-check 5 resources to ensure the external URLs in the seed data actually resolve (don't 404).

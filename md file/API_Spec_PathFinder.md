@@ -33,26 +33,25 @@ backend/
 │   └── adaptive.py          # Adaptation triggers (Struggling, Skip)
 ├── services/                # External/AI Integrations
 │   ├── llm.py               # OpenAI/Gemini abstraction
-│   ├── vector_store.py      # ChromaDB client wrapper
+│   ├── vector_store.py      # Supabase pgvector client wrapper
 │   ├── mentor_agent.py      # LangGraph Stateful Agent + Tool Bindings
-├── db/                      # Data Access Layer (PostgreSQL/SQLite)
-│   ├── database.py          # SQLAlchemy engine & session maker
-│   ├── models.py            # SQLAlchemy ORM models
-│   └── crud.py              # Repository functions (get, create, update)
+├── db/                      # Data Access Layer (Supabase PostgreSQL)
+│   ├── database.py          # Supabase client initialization
+│   └── crud.py              # Repository functions (get, create, update via Supabase SDK)
 └── requirements.txt         # Dependencies
 ```
 
 ### 1.2 Configuration & Environment Variables (`core/config.py`)
 Managed via Pydantic `BaseSettings`.
-*   `DATABASE_URL`: URI for PostgreSQL (or SQLite for MVP).
+*   `SUPABASE_URL` and `SUPABASE_KEY`: Supabase API credentials.
 *   `OPENAI_API_KEY` / `GEMINI_API_KEY`: Keys for LLM extraction/generation.
-*   `CHROMADB_PATH`: Local path for embedded ChromaDB.
+*   `SUPABASE_DB_URL`: PostgreSQL connection string for pgvector.
 *   `CORS_ORIGINS`: Comma-separated list of allowed origins (e.g., `http://localhost:3000`).
 
 ### 1.3 CORS, Versioning, and Authentication
 *   **CORS:** Enabled in `main.py` using `CORSMiddleware`, restricting to frontend domains.
 *   **Versioning:** All endpoints are prefixed with `/api/v1/`.
-*   **Authentication (MVP):** To maintain hackathon velocity, we use a simple Header-based auth (`X-Learner-ID: <uuid>`). In production, this would be swapped for a JWT Bearer token dependency in FastAPI (`Depends(get_current_user)`).
+*   **Authentication:** Supabase Auth is integrated. Endpoints require a valid Supabase JWT verified via a FastAPI dependency (`Depends(verify_supabase_jwt)`).
 
 ### 1.4 Error Handling
 Custom global exception handlers in `main.py` return consistent JSON errors.
@@ -116,7 +115,7 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
 *   **Method:** `GET`
 *   **URL:** `/learners/{learner_id}`
 *   **Purpose:** Retrieve learner data and current mastery map.
-*   **Authentication:** `X-Learner-ID` header must match.
+*   **Authentication:** Requires a valid Supabase JWT Bearer token in the `Authorization` header.
 *   **Response Schema:** `LearnerProfileDetail` (Includes `mastery_map`).
 *   **Errors:** `404 Not Found`.
 
@@ -164,7 +163,7 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
 ### 2.9 Recommendation Explanations ("Why This?")
 *   **Method:** `GET`
 *   **URL:** `/modules/{module_id}/explanation`
-*   **Authentication:** Requires `X-Learner-ID` header.
+*   **Authentication:** Requires a valid Supabase JWT Bearer token in the `Authorization` header.
 *   **Purpose:** Fetch the scoring breakdown and LLM-generated explanation for why a module was recommended to *this specific user*.
 *   **Response Schema:**
     ```json
@@ -243,14 +242,14 @@ Follow this order to ensure dependencies are met and blockers are minimized duri
 
 ### Phase 1: Foundation & Data Access (Hours 1-3)
 1.  **Setup:** Initialize FastAPI project, Pydantic settings, and `requirements.txt`. Add CORS middleware.
-2.  **Database ORM:** Write SQLAlchemy models (`db/models.py`) mapping to the Data Model schemas (Learners, Skills, Paths).
-3.  **Seed Data Loading:** Write a startup script to load `skills.json` and `prerequisites.json` into the DB.
-4.  **Vector DB Setup:** Initialize ChromaDB client. Write `seed_vectordb.py` to embed resources via OpenAI API and store them in Chroma.
+2.  **Database Schema:** Set up Supabase PostgreSQL tables matching the Data Model schemas (Learners, Skills, Paths).
+3.  **Seed Data Loading:** Write a startup script to load `skills.json` and `prerequisites.json` into Supabase.
+4.  **Vector DB Setup:** Initialize Supabase pgvector using `langchain-postgres`. Write `seed_supabase.py` to embed resources via OpenAI API and store them in pgvector.
 
 ### Phase 2: Core Engines (Hours 3-6)
 *(Develop these as pure Python functions, testing them independently of FastAPI)*
 5.  **Skill-Gap Engine:** Implement array comparison logic between target role and current skills.
-6.  **Recommendation Engine:** Implement ChromaDB querying and the multi-factor scoring formula.
+6.  **Recommendation Engine:** Implement pgvector querying via LangChain and the multi-factor scoring formula.
 7.  **Path Generator Engine:** Implement Kahn's Algorithm for Topological Sort on the prerequisite DAG.
 
 ### Phase 3: Core API Endpoints (Hours 6-10)
@@ -267,4 +266,4 @@ Follow this order to ensure dependencies are met and blockers are minimized duri
 ### Phase 5: Stretch Goals & Polish (Hours 14+)
 15. **AI Mentor:** Implement `POST /mentor/chat` using LangChain. Define tools (`get_path`, `explain_module`) and bind them to the agent.
 16. **Assessments:** Implement `GET /assessment/{skill_id}` using LLM generation to create on-the-fly quizzes.
-17. **Error Handling:** Review all endpoints. Add try/catch blocks for LLM timeouts and Vector DB failures, returning graceful fallback data.
+17. **Error Handling:** Review all endpoints. Add try/catch blocks for LLM timeouts and Supabase failures, returning graceful fallback data.

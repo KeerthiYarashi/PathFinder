@@ -92,12 +92,12 @@ The recommendation engine answers: *"For this specific skill gap, what is the be
 ### 4.1 Embedding Strategy
 *   **Model:** `text-embedding-3-small` (or local `all-MiniLM-L6-v2`).
 *   **Document Formulation:** We embed a concatenated string of the resource: `"{title}. {description}. Covers skills: {skills_covered}"`.
-*   **Storage:** ChromaDB collection with associated metadata (`difficulty`, `format_type`, `duration_hours`).
+*   **Storage:** Supabase pgvector table with associated metadata (`difficulty`, `format_type`, `duration_hours`).
 
 ### 4.2 Semantic Retrieval (Stage 1)
 For a target skill gap (e.g., "Probability"):
 1.  **Query:** Embed the skill name and description.
-2.  **Filter:** Apply ChromaDB `where` filters based on hard constraints (e.g., `difficulty_level <= learner_tolerance + 1`).
+2.  **Filter:** Apply pgvector metadata filters based on hard constraints (e.g., `difficulty_level <= learner_tolerance + 1`).
 3.  **Retrieve:** Fetch the top 10 most semantically similar resources.
 
 ### 4.3 Recommendation Scoring & Course Ranking (Stage 2)
@@ -105,7 +105,7 @@ For the 10 retrieved candidates, calculate a multi-factor personalization score:
 
 ```python
 Final_Score = (
-    w1 * Semantic_Similarity_Score (from ChromaDB, normalized) +
+    w1 * Semantic_Similarity_Score (from pgvector, normalized) +
     w2 * Difficulty_Fit(Resource Level vs Learner Level) +
     w3 * Time_Fit(Resource Duration vs Weekly Budget) +
     w4 * Format_Affinity(Resource Format vs Learner Preference) +
@@ -129,10 +129,10 @@ Final_Score = (
 
 ### 5.2 Milestone & Project Recommendation
 *   **Milestones:** Inserted programmatically when a cluster of related skills (e.g., all "Data Analysis" nodes) is completed.
-*   **Project Recommendation:** At a milestone, the recommendation engine queries ChromaDB specifically for `format_type="project"`, filtering for projects that cover >= 70% of the newly acquired skills.
+*   **Project Recommendation:** At a milestone, the recommendation engine queries pgvector specifically for `format_type="project"`, filtering for projects that cover >= 70% of the newly acquired skills.
 
 ### 5.3 Assessment Recommendation (RAG)
-After completing a module, the system uses a **RetrievalQA (RAG) Chain**. LangChain queries ChromaDB for the transcript/description of the specific module just completed and generates a highly targeted 3-question MCQ quiz based *strictly* on that retrieved content to eliminate hallucinations.
+After completing a module, the system uses a **RetrievalQA (RAG) Chain**. LangChain queries pgvector for the transcript/description of the specific module just completed and generates a highly targeted 3-question MCQ quiz based *strictly* on that retrieved content to eliminate hallucinations.
 
 ---
 
@@ -166,7 +166,7 @@ The Mentor is built using **LangGraph** to maintain complex conversational state
 
 ### 7.3 Hallucination Prevention
 1.  **Strict Separation of Concerns:** LLM *never* generates the curriculum or course links. It only extracts data and formats text.
-2.  **RAG Constraints:** Semantic retrieval enforces metadata bounds (duration, difficulty). The LLM cannot recommend a course that doesn't exist in ChromaDB.
+2.  **RAG Constraints:** Semantic retrieval enforces metadata bounds (duration, difficulty). The LLM cannot recommend a course that doesn't exist in pgvector.
 3.  **Agent Tool Boundaries:** The AI Mentor cannot modify the path arbitrarily; it can only invoke the deterministic `trigger_recalculation()` engine.
 
 ---
@@ -195,7 +195,7 @@ graph TD
 
     subgraph Recommendation Pipeline
         PriorityGaps --> Retriever[Semantic Retriever]
-        VDB[(ChromaDB - Resources)] --> Retriever
+        VDB[(pgvector - Resources)] --> Retriever
         Retriever --> Candidates[Top 10 Candidates]
         
         Candidates --> Scorer[Multi-Factor Scoring Engine]
@@ -231,7 +231,7 @@ graph TD
 | **Profile Extractor** | GPT-4o-mini (JSON Mode) | `string` (chat history) | `JSON` (LearnerProfile) |
 | **Skill-Gap Engine** | Python Logic | `TargetRole`, `Learner_Mastery_Map` | `List[GapItem]` (sorted) |
 | **Embeddings** | text-embedding-3-small | `string` (resource text) | `List[float]` (1536d vector) |
-| **Retriever** | ChromaDB | `string` (skill name), `metadata_filters` | `List[Resource]` (Top K=10) |
+| **Retriever** | Supabase pgvector | `string` (skill name), `metadata_filters` | `List[Resource]` (Top K=10) |
 | **Scorer** | Python Math | `List[Resource]`, `LearnerState` | `List[RankedResource]` |
 | **Path Generator** | Python (Kahn's Algo) | `List[GapItem]`, `List[RankedResource]` | `LearningPath` (timeline) |
 | **Explainer** | GPT-4o-mini (Prompt) | `RankedResource.scores` | `string` (Explanation text) |
@@ -244,7 +244,7 @@ graph TD
 ### Multi-Factor Recommendation Scoring
 ```python
 def score_candidate(candidate_resource, learner_state, gap_item):
-    # 1. Semantic Similarity (normalized 0 to 1 from ChromaDB distance)
+    # 1. Semantic Similarity (normalized 0 to 1 from pgvector distance)
     semantic_score = normalize(candidate_resource.distance)
     
     # 2. Difficulty Fit
@@ -300,7 +300,7 @@ def handle_struggling(module_id, learner_state, dag):
 
 ### AI/ML Component Evaluation (Offline)
 *   **Extraction Accuracy:** % of correct JSON profiles parsed from test chat transcripts (Precision/Recall on entities).
-*   **Retrieval (NDCG@10):** Normalized Discounted Cumulative Gain of ChromaDB search against human-annotated relevant courses.
+*   **Retrieval (NDCG@10):** Normalized Discounted Cumulative Gain of pgvector search against human-annotated relevant courses.
 *   **DAG Validity Check:** 100% pass rate on algorithmic tests verifying no topological sorting cycles or dependency violations.
 *   **Hallucination Rate (Mentor):** % of mentor responses referencing courses not in the database (Target: 0%).
 

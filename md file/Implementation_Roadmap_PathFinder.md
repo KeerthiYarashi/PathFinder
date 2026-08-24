@@ -19,16 +19,16 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Parallel Development:** Backend and Frontend environments can be set up simultaneously.
 
 ### Phase 2 — Database and Seed Data
-*   **Tasks:** Define SQLAlchemy ORM models, curate JSON seed data (Skills, Prereqs, Resources), write script to load seed data into SQLite and ChromaDB.
+*   **Tasks:** Set up Supabase PostgreSQL tables matching schemas, curate JSON seed data (Skills, Prereqs, Resources), write script to load seed data into Supabase (relational + pgvector).
 *   **Files/Modules to create:**
-    *   `backend/db/models.py`, `backend/db/database.py`
+    *   `backend/db/crud.py`, `backend/db/database.py`
     *   `backend/data/skills.json`, `prerequisites.json`, `resources.json`
-    *   `scripts/seed_db.py`, `scripts/seed_vectordb.py`
+    *   `scripts/seed_supabase.py`
 *   **Dependencies:** Phase 1 (Backend).
-*   **Expected Output:** Populated SQLite database and local ChromaDB instance.
-*   **Acceptance Criteria:** Can query a resource by ID from SQLite and perform a basic similarity search in ChromaDB.
+*   **Expected Output:** Populated Supabase project (PostgreSQL + pgvector).
+*   **Acceptance Criteria:** Can query a resource by ID from Supabase and perform a basic similarity search via pgvector.
 *   **Estimated Difficulty:** Medium (Data curation is time-consuming).
-*   **Parallel Development:** Data curation (JSON files) can happen independently of ORM setup.
+*   **Parallel Development:** Data curation (JSON files) can happen independently of DB setup.
 
 ### Phase 3 — Backend Foundation
 *   **Tasks:** Implement basic CRUD endpoints (Learner creation), setup core Pydantic schemas, and define the LLM Service abstraction.
@@ -38,7 +38,7 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
     *   `backend/services/llm.py`
 *   **Dependencies:** Phase 2 (Database).
 *   **Expected Output:** API endpoints to create and fetch a Learner profile.
-*   **Acceptance Criteria:** `POST /api/v1/learners` successfully writes to SQLite and returns a UUID.
+*   **Acceptance Criteria:** `POST /api/v1/learners` successfully writes to Supabase and returns a UUID.
 *   **Estimated Difficulty:** Low.
 *   **Parallel Development:** Frontend can start building UI components (Phase 11) using mock data.
 
@@ -63,11 +63,11 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Estimated Difficulty:** Medium (Prioritization math).
 
 ### Phase 7 — Hybrid Search & Recommendation Scoring
-*   **Tasks:** Implement Hybrid Search (ChromaDB semantic search + explicit Metadata filtering) and the multi-factor scoring formula.
+*   **Tasks:** Implement Hybrid Search (pgvector semantic search + explicit Metadata filtering) and the multi-factor scoring formula.
 *   **Files/Modules to create:**
     *   `backend/engines/recommendation.py`
     *   `backend/services/vector_store.py`
-*   **Dependencies:** Phase 2 (ChromaDB Seeded), Phase 6 (Skill Gaps).
+*   **Dependencies:** Phase 2 (Supabase Seeded), Phase 6 (Skill Gaps).
 *   **Expected Output:** Function that takes a `SkillGap` and returns a ranked list of `Resource` objects.
 *   **Acceptance Criteria:** Returns courses matching the learner's difficulty tolerance and time budget constraints.
 *   **Estimated Difficulty:** High (Tuning the scoring weights).
@@ -136,12 +136,12 @@ To move fast, the team must operate in parallel.
 
 ### 2. The AI / Data Engineer (Person B)
 *   **Focus:** LLMs, Vector DB, Prompt Engineering.
-*   **Owns:** Seed Data Curation (Phase 2), ChromaDB setup, Recommendation Scoring (Phase 7), AI Mentor Agent (Phase 9), LLM Extraction prompts (Phase 4).
+*   **Owns:** Seed Data Curation (Phase 2), Supabase pgvector setup, Recommendation Scoring (Phase 7), AI Mentor Agent (Phase 9), LLM Extraction prompts (Phase 4).
 *   **Why:** Concentrates all token-handling and embedding logic with one person.
 
 ### 3. The Backend API Developer (Person C)
 *   **Focus:** FastAPI, Database, Routing, Schema Validation.
-*   **Owns:** FastAPI setup (Phase 1), SQLAlchemy DB/CRUD (Phase 2, 3), API Routers wiring up Person A & B's engines to the web (Phase 4, 10, etc.).
+*   **Owns:** FastAPI setup (Phase 1), Supabase DB/CRUD (Phase 2, 3), API Routers wiring up Person A & B's engines to the web (Phase 4, 10, etc.).
 *   **Why:** Ensures API contracts are respected and database state is managed cleanly. Acts as the bridge between engines and frontend.
 
 ### 4. The Frontend Logic Lead (Person D)
