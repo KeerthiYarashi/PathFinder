@@ -158,11 +158,11 @@ Every recommendation requires an explanation. We do NOT ask the LLM to invent an
 *   *Template Approach:* "This fits your goal because it covers [Skill]. It matches your [Difficulty] level and fits your [X hours] budget."
 *   *LLM Approach:* `Prompt: Explain this recommendation to the user using these exact scoring factors: {scoring_dict}`.
 
-### 7.2 AI Mentor (LangGraph Stateful Agent)
-The Mentor is built using **LangGraph** to maintain complex conversational states. It has access to specific tools via LangChain.
+### 7.2 AI Mentor (LangGraph Stateful Tool-Using Agent)
+The Mentor is built using **LangGraph** to maintain complex conversational states. It has access to specific tools via LangChain, allowing it to reason over the user's data.
 *   **Context Window:** Learner Profile, current `mastery_map`, current Path, current active module.
-*   **Tools (Functions):** `get_skill_gap()`, `explain_score(module_id)`, `trigger_recalculation()`, `insert_refresher(skill_id)`.
-*   **Workflow:** User asks "Why am I learning Math?". Agent uses `get_skill_gap` to see Math is a prereq for ML, and explains it contextually.
+*   **Tools (Functions):** `get_my_progress()`, `get_skill_gap()`, `get_current_path()`, `get_next_action()`, `search_resources()`.
+*   **Workflow:** User asks "Why am I learning Statistics now?". Agent uses `get_skill_gap` to see Statistics is missing, checks `get_current_path` to see ML is the target which requires Statistics, and explains it contextually based on the deterministic engine's logic.
 
 ### 7.3 Hallucination Prevention
 1.  **Strict Separation of Concerns:** LLM *never* generates the curriculum or course links. It only extracts data and formats text.

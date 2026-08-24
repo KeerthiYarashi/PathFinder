@@ -20,7 +20,7 @@ backend/
 │   │   ├── learner.py       # /api/v1/learner endpoints
 │   │   ├── path.py          # /api/v1/path endpoints (generation, gaps)
 │   │   ├── modules.py       # /api/v1/modules endpoints (progress, explanation)
-│   │   └── mentor.py        # /api/v1/mentor endpoints (LangServe)
+│   │   └── mentor.py        # /api/v1/mentor endpoints
 ├── schemas/                 # Pydantic Models (Request/Response validation)
 │   ├── learner.py
 │   ├── path.py
@@ -222,12 +222,12 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
 ### 2.14 Project Recommendations
 *   *(Handled via the Path Generation endpoint (2.6) which inserts projects at milestones, or via Milestone Completion (2.13).)*
 
-### 2.15 AI Mentor / Chat (LangServe)
+### 2.15 AI Mentor / Chat
 *   **Method:** `POST`
-*   **URL:** `/mentor/invoke` (or `/mentor/stream` for SSE)
-*   **Purpose:** Interact with the LangGraph Stateful Agent via LangServe endpoints.
-*   **Request Schema:** LangServe Standard `{"input": {"message": "Why is math before ML?", "learner_id": "123"}}`
-*   **Playground URL:** `/mentor/playground` (Built-in testing UI provided by LangServe).
+*   **URL:** `/api/v1/mentor/chat` (or `/api/v1/mentor/stream` for SSE)
+*   **Purpose:** Interact with the LangGraph Stateful Tool-using Agent via standard FastAPI endpoints.
+*   **Request Schema:** `{"learner_id": "123", "message": "Why is math before ML?"}`
+*   **Response Schema:** `{"response": "Math is recommended because...", "tools_used": ["get_skill_gap", "get_current_path"]}`
 
 ### 2.16 Feedback
 *   **Method:** `POST`

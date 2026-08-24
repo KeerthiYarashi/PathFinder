@@ -81,18 +81,18 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Acceptance Criteria:** The generated path never violates a prerequisite constraint (e.g., Math is ALWAYS before ML).
 *   **Estimated Difficulty:** High (Graph traversal logic).
 
-### Phase 9 — LangGraph Stateful Mentor & LangServe
-*   **Tasks:** Implement a LangGraph stateful agent for the Mentor, add custom tools, and expose it via LangServe.
+### Phase 9 — LangGraph Tool-Using AI Mentor (FastAPI)
+*   **Tasks:** Implement a LangGraph stateful agent for the Mentor. Provide the agent with explicit tools (`get_my_progress()`, `get_skill_gap()`, `get_current_path()`, `get_next_action()`, `search_resources()`) and expose the agent via standard FastAPI routes.
 *   **Files/Modules to create:**
     *   `backend/services/mentor_agent.py`
-    *   `backend/api/v1/mentor.py` (LangServe routes)
-*   **Dependencies:** Phase 6 (Skill-Gap).
-*   **Expected Output:** Conversational endpoint for the Mentor UI.
-*   **Acceptance Criteria:** Agent can accurately answer "Why is Statistics in my path?" by calling the `get_skill_gap` tool.
-*   **Estimated Difficulty:** High (Agent reliability and hallucination prevention).
+    *   `backend/api/v1/mentor.py` (Standard FastAPI routes calling LangGraph)
+*   **Dependencies:** Phase 6 (Skill-Gap), Phase 7, Phase 8.
+*   **Expected Output:** Conversational endpoint for the Mentor UI that returns natural language responses and tool execution traces.
+*   **Acceptance Criteria:** Agent can accurately answer "Why is Statistics in my path?" by using tools to check the learner's gap, reading the recommendation scoring reasons, and explaining it naturally.
+*   **Estimated Difficulty:** High (Agent reliability and tool formatting).
 
-### Phase 10 — Progress & Adaptation (Plus RAG Assessments)
-*   **Tasks:** Implement progress tracking (`POST /action`), the rule-based "Struggling" triggers, and the LangChain RetrievalQA chain for RAG-powered dynamic quiz assessments.
+### Phase 10 — Progress & Dynamic Adaptation
+*   **Tasks:** Implement progress tracking (`POST /action`) and rule-based "Struggling" triggers. Ensure the algorithm actively changes the path while LangChain/LangGraph explains the change.
 *   **Files/Modules to create:**
     *   `backend/api/v1/modules.py`
     *   `backend/engines/adaptive.py`
@@ -101,7 +101,12 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Acceptance Criteria:** Hitting the `/struggling` endpoint injects a prerequisite "refresher" module before the current module in the path JSON.
 *   **Estimated Difficulty:** Medium.
 
-### Phase 11 & 12 — Dashboard & Frontend Integration
+### Phase 11 — Stretch Goals (RAG Assessments & What-If)
+*   **Tasks:** Implement the LangChain RetrievalQA chain for RAG-powered dynamic quiz assessments, and build a What-if time simulator to recalculate the timeline if learning hours change.
+*   **Dependencies:** Phases 1-10.
+*   **Estimated Difficulty:** High.
+
+### Phase 12 & 13 — Dashboard & Frontend Integration
 *   **Tasks:** Build the React/Next.js components (Timeline, Radar Chart, Chat Interface) and wire them to the FastAPI endpoints.
 *   **Files/Modules to create:**
     *   `frontend/components/...`
@@ -113,9 +118,9 @@ This roadmap prioritizes a working end-to-end MVP. It strictly separates determi
 *   **Estimated Difficulty:** High (State management and animations).
 *   **Parallel Development:** UI components can be built using mock JSON responses from Day 1, long before the backend is finished.
 
-### Phase 13, 14, 15 — Testing, Deployment & Demo Prep
+### Phase 14, 15, 16 — Testing, Deployment & Demo Prep
 *   **Tasks:** End-to-end manual testing of the critical path. Fix critical bugs. Write a tight 3-minute demo script. Run the stack locally for the presentation (or deploy to Vercel/Render if required).
-*   **Dependencies:** Phase 12.
+*   **Dependencies:** Phase 13.
 *   **Acceptance Criteria:** A flawless 3-minute walk-through without crashes or infinite LLM loading spinners.
 
 ---

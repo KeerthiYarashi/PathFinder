@@ -171,7 +171,7 @@ pathfinder/
 |---------|---------|-----|
 | `pydantic` | Data validation + models | Built into FastAPI. Type-safe request/response. |
 | `sqlalchemy` | ORM for database | Works with SQLite and PostgreSQL. Clean abstraction. |
-| `langchain`, `langgraph`, `langserve` | LLM integration, stateful agents, API | Structured output, stateful AI Mentor (LangGraph), built-in API playgrounds (LangServe). |
+| `langchain`, `langgraph` | LLM integration, stateful agents | Structured output, stateful AI Mentor (LangGraph) integrated inside FastAPI. |
 | `chromadb` | Vector database (embedded) | Zero-infra vector search. Runs in-process. |
 | `sentence-transformers` | Local embeddings (fallback) | Free embeddings if OpenAI quota runs out. |
 | `python-dotenv` | Environment variables | Load `.env` for API keys. |
