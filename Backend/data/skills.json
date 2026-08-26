@@ -1,0 +1,49 @@
+{
+  "roles": {
+    "role_ml_engineer": {
+      "math_probability": {"name": "Probability Theory", "target_level": 2},
+      "math_linear_algebra": {"name": "Linear Algebra", "target_level": 2},
+      "python_basics": {"name": "Python Basics", "target_level": 3},
+      "python_pandas": {"name": "Pandas Data Manipulation", "target_level": 3},
+      "ml_basics": {"name": "Machine Learning Fundamentals", "target_level": 3},
+      "dl_neural_networks": {"name": "Deep Learning & Neural Nets", "target_level": 2}
+    },
+    "role_data_analyst": {
+      "math_probability": {"name": "Probability Theory", "target_level": 1},
+      "python_basics": {"name": "Python Basics", "target_level": 2},
+      "python_pandas": {"name": "Pandas Data Manipulation", "target_level": 3},
+      "sql_basics": {"name": "SQL Fundamentals", "target_level": 3},
+      "sql_advanced": {"name": "Advanced SQL & Aggregations", "target_level": 2}
+    },
+    "role_fullstack_dev": {
+      "html_css": {"name": "HTML & CSS", "target_level": 3},
+      "js_basics": {"name": "JavaScript Fundamentals", "target_level": 3},
+      "react_basics": {"name": "React.js", "target_level": 2},
+      "node_basics": {"name": "Node.js Basics", "target_level": 2},
+      "sql_basics": {"name": "SQL Fundamentals", "target_level": 2}
+    },
+    "role_cloud_architect": {
+      "python_basics": {"name": "Python Basics", "target_level": 2},
+      "cloud_fundamentals": {"name": "Cloud Fundamentals", "target_level": 3},
+      "aws_architecture": {"name": "AWS Architecture", "target_level": 3},
+      "docker_k8s": {"name": "Docker and Kubernetes", "target_level": 2}
+    }
+  },
+  "skills": [
+    { "id": "math_probability", "name": "Probability Theory", "domain": "Mathematics" },
+    { "id": "math_linear_algebra", "name": "Linear Algebra", "domain": "Mathematics" },
+    { "id": "python_basics", "name": "Python Basics", "domain": "Programming" },
+    { "id": "python_pandas", "name": "Pandas Data Manipulation", "domain": "Data Science" },
+    { "id": "ml_basics", "name": "Machine Learning Fundamentals", "domain": "AI/ML" },
+    { "id": "dl_neural_networks", "name": "Deep Learning & Neural Nets", "domain": "AI/ML" },
+    { "id": "sql_basics", "name": "SQL Fundamentals", "domain": "Data" },
+    { "id": "sql_advanced", "name": "Advanced SQL & Aggregations", "domain": "Data" },
+    { "id": "html_css", "name": "HTML & CSS", "domain": "Web Dev" },
+    { "id": "js_basics", "name": "JavaScript Fundamentals", "domain": "Web Dev" },
+    { "id": "react_basics", "name": "React.js", "domain": "Web Dev" },
+    { "id": "node_basics", "name": "Node.js Basics", "domain": "Web Dev" },
+    { "id": "cloud_fundamentals", "name": "Cloud Fundamentals", "domain": "Cloud" },
+    { "id": "aws_architecture", "name": "AWS Architecture", "domain": "Cloud" },
+    { "id": "docker_k8s", "name": "Docker and Kubernetes", "domain": "Cloud" }
+  ]
+}

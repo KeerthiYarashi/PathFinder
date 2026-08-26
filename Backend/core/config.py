@@ -11,9 +11,14 @@ class Settings(BaseSettings):
     # Supabase config
     SUPABASE_URL: str
     SUPABASE_KEY: str
+    SUPABASE_DB_URL: str = "" # PostgreSQL connection string for pgvector
     
-    # LLM keys
+    # LLM & AI config
     GEMINI_API_KEY: str = ""
+    OPENAI_API_KEY: str = ""
+    LLM_PROVIDER: str = "gemini" # "gemini" | "openai"
+    EMBEDDING_MODEL: str = "models/text-embedding-004"
+    VECTOR_COLLECTION: str = "learning_resources"
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 

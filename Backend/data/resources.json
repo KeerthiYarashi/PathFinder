@@ -1,0 +1,211 @@
+[
+  {
+    "id": "res_prob_101",
+    "type": "course",
+    "title": "Statistics and Probability for Data Science",
+    "description": "Covers probability distributions, Bayes theorem, hypothesis testing, and statistical inference.",
+    "url": "https://www.coursera.org/learn/statistics-probability",
+    "difficulty_level": 2,
+    "duration_hours": 12.0,
+    "quality_score": 4.7,
+    "skills_covered": [{ "skill_id": "math_probability", "target_level": 2 }]
+  },
+  {
+    "id": "refresher_prob",
+    "type": "refresher",
+    "title": "Probability in 10 Minutes",
+    "description": "Quick review of Bayes theorem, conditional probability, and basic distributions.",
+    "url": "https://www.youtube.com/watch?v=uzkc-qNVoOk",
+    "difficulty_level": 1,
+    "duration_hours": 0.25,
+    "quality_score": 4.5,
+    "skills_covered": [{ "skill_id": "math_probability", "target_level": 1 }]
+  },
+  {
+    "id": "res_lin_alg_101",
+    "type": "course",
+    "title": "Linear Algebra for Machine Learning",
+    "description": "Learn vectors, matrices, eigenvectors, and projections.",
+    "url": "https://www.coursera.org/learn/linear-algebra-machine-learning",
+    "difficulty_level": 2,
+    "duration_hours": 10.0,
+    "quality_score": 4.8,
+    "skills_covered": [{ "skill_id": "math_linear_algebra", "target_level": 2 }]
+  },
+  {
+    "id": "refresher_lin_alg",
+    "type": "refresher",
+    "title": "Linear Algebra Quick Review",
+    "description": "A rapid recap of matrix multiplication and dot products.",
+    "url": "https://www.youtube.com/watch?v=fNk_zzaMoSs",
+    "difficulty_level": 1,
+    "duration_hours": 0.5,
+    "quality_score": 4.4,
+    "skills_covered": [{ "skill_id": "math_linear_algebra", "target_level": 1 }]
+  },
+  {
+    "id": "res_py_101",
+    "type": "course",
+    "title": "Python for Everybody",
+    "description": "Introduction to Python programming language.",
+    "url": "https://www.coursera.org/specializations/python",
+    "difficulty_level": 1,
+    "duration_hours": 20.0,
+    "quality_score": 4.9,
+    "skills_covered": [{ "skill_id": "python_basics", "target_level": 2 }]
+  },
+  {
+    "id": "refresher_py",
+    "type": "refresher",
+    "title": "Python Crash Course",
+    "description": "A quick run-through of Python syntax, loops, and functions.",
+    "url": "https://www.youtube.com/watch?v=JJmcL1N2KQs",
+    "difficulty_level": 1,
+    "duration_hours": 1.0,
+    "quality_score": 4.6,
+    "skills_covered": [{ "skill_id": "python_basics", "target_level": 1 }]
+  },
+  {
+    "id": "res_pandas_101",
+    "type": "course",
+    "title": "Data Analysis with Pandas",
+    "description": "Learn to manipulate DataFrames, handle missing data, and group aggregations.",
+    "url": "https://www.udemy.com/course/data-analysis-with-pandas/",
+    "difficulty_level": 2,
+    "duration_hours": 8.0,
+    "quality_score": 4.7,
+    "skills_covered": [{ "skill_id": "python_pandas", "target_level": 3 }]
+  },
+  {
+    "id": "refresher_pandas",
+    "type": "refresher",
+    "title": "Pandas in 15 Minutes",
+    "description": "Quick overview of Pandas DataFrames and Series.",
+    "url": "https://www.youtube.com/watch?v=dcqPhpY7tWk",
+    "difficulty_level": 1,
+    "duration_hours": 0.25,
+    "quality_score": 4.3,
+    "skills_covered": [{ "skill_id": "python_pandas", "target_level": 1 }]
+  },
+  {
+    "id": "res_ml_101",
+    "type": "course",
+    "title": "Machine Learning by Stanford",
+    "description": "Broad introduction to machine learning, data mining, and statistical pattern recognition.",
+    "url": "https://www.coursera.org/learn/machine-learning",
+    "difficulty_level": 2,
+    "duration_hours": 30.0,
+    "quality_score": 4.9,
+    "skills_covered": [{ "skill_id": "ml_basics", "target_level": 3 }]
+  },
+  {
+    "id": "refresher_ml",
+    "type": "refresher",
+    "title": "Machine Learning Crash Course",
+    "description": "Fast-paced, practical introduction to ML.",
+    "url": "https://developers.google.com/machine-learning/crash-course",
+    "difficulty_level": 1,
+    "duration_hours": 2.0,
+    "quality_score": 4.5,
+    "skills_covered": [{ "skill_id": "ml_basics", "target_level": 1 }]
+  },
+  {
+    "id": "res_dl_101",
+    "type": "course",
+    "title": "Deep Learning Specialization",
+    "description": "Learn how to build and train neural network architectures.",
+    "url": "https://www.coursera.org/specializations/deep-learning",
+    "difficulty_level": 3,
+    "duration_hours": 40.0,
+    "quality_score": 4.8,
+    "skills_covered": [{ "skill_id": "dl_neural_networks", "target_level": 3 }]
+  },
+  {
+    "id": "res_sql_101",
+    "type": "course",
+    "title": "SQL for Data Science",
+    "description": "Fundamentals of SQL and working with data.",
+    "url": "https://www.coursera.org/learn/sql-for-data-science",
+    "difficulty_level": 1,
+    "duration_hours": 14.0,
+    "quality_score": 4.7,
+    "skills_covered": [{ "skill_id": "sql_basics", "target_level": 2 }]
+  },
+  {
+    "id": "refresher_sql",
+    "type": "refresher",
+    "title": "SQL in 1 Hour",
+    "description": "Quick tutorial on basic SQL SELECT statements.",
+    "url": "https://www.youtube.com/watch?v=HXV3zeJZ1EQ",
+    "difficulty_level": 1,
+    "duration_hours": 1.0,
+    "quality_score": 4.5,
+    "skills_covered": [{ "skill_id": "sql_basics", "target_level": 1 }]
+  },
+  {
+    "id": "res_html_css_101",
+    "type": "course",
+    "title": "HTML, CSS, and Javascript for Web Developers",
+    "description": "Learn the basic tools that every web page coder needs to know.",
+    "url": "https://www.coursera.org/learn/html-css-javascript-for-web-developers",
+    "difficulty_level": 1,
+    "duration_hours": 20.0,
+    "quality_score": 4.8,
+    "skills_covered": [{ "skill_id": "html_css", "target_level": 3 }]
+  },
+  {
+    "id": "res_js_101",
+    "type": "course",
+    "title": "JavaScript: Understanding the Weird Parts",
+    "description": "Advanced JavaScript concepts and fundamentals.",
+    "url": "https://www.udemy.com/course/understand-javascript/",
+    "difficulty_level": 2,
+    "duration_hours": 12.0,
+    "quality_score": 4.9,
+    "skills_covered": [{ "skill_id": "js_basics", "target_level": 3 }]
+  },
+  {
+    "id": "refresher_js",
+    "type": "refresher",
+    "title": "JS Crash Course",
+    "description": "A quick run-through of JavaScript basics.",
+    "url": "https://www.youtube.com/watch?v=hdI2bqOjy3c",
+    "difficulty_level": 1,
+    "duration_hours": 1.5,
+    "quality_score": 4.6,
+    "skills_covered": [{ "skill_id": "js_basics", "target_level": 1 }]
+  },
+  {
+    "id": "res_react_101",
+    "type": "course",
+    "title": "React - The Complete Guide",
+    "description": "Dive in and learn React.js from scratch!",
+    "url": "https://www.udemy.com/course/react-the-complete-guide-incl-redux/",
+    "difficulty_level": 2,
+    "duration_hours": 40.0,
+    "quality_score": 4.8,
+    "skills_covered": [{ "skill_id": "react_basics", "target_level": 3 }]
+  },
+  {
+    "id": "res_cloud_101",
+    "type": "course",
+    "title": "Cloud Computing Fundamentals",
+    "description": "Introduction to cloud concepts.",
+    "url": "https://www.coursera.org/learn/cloud-computing-basics",
+    "difficulty_level": 1,
+    "duration_hours": 10.0,
+    "quality_score": 4.5,
+    "skills_covered": [{ "skill_id": "cloud_fundamentals", "target_level": 2 }]
+  },
+  {
+    "id": "res_aws_101",
+    "type": "course",
+    "title": "AWS Certified Solutions Architect",
+    "description": "Learn to design scalable cloud applications.",
+    "url": "https://www.udemy.com/course/aws-certified-solutions-architect-associate-saa-c03/",
+    "difficulty_level": 3,
+    "duration_hours": 27.0,
+    "quality_score": 4.8,
+    "skills_covered": [{ "skill_id": "aws_architecture", "target_level": 3 }]
+  }
+]

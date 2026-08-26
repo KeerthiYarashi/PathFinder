@@ -1,21 +1,18 @@
 from typing import Dict, List
 from schemas.path import SkillGap
 
-# Mock Dataset: Target roles and their required skills/levels
-# In a full production app, this would live in the database.
-MOCK_ROLE_REQUIREMENTS = {
-    "role_ml_engineer": {
-        "math_probability": {"name": "Probability Theory", "target_level": 2},
-        "python_pandas": {"name": "Pandas Data Manipulation", "target_level": 3},
-        "ml_basics": {"name": "Machine Learning Fundamentals", "target_level": 3},
-        "dl_neural_networks": {"name": "Deep Learning & Neural Nets", "target_level": 2}
-    },
-    "role_data_analyst": {
-        "math_probability": {"name": "Probability Theory", "target_level": 1},
-        "python_pandas": {"name": "Pandas Data Manipulation", "target_level": 3},
-        "sql_basics": {"name": "SQL Fundamentals", "target_level": 3},
-    }
-}
+import json
+import os
+
+def get_role_requirements() -> Dict[str, Dict]:
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'skills.json')
+    try:
+        with open(data_path, 'r') as f:
+            data = json.load(f)
+            return data.get("roles", {})
+    except Exception as e:
+        print(f"Warning: Could not load skills.json: {e}")
+        return {}
 
 def calculate_skill_gaps(target_role: str, current_skills: Dict[str, int]) -> List[SkillGap]:
     """
@@ -23,11 +20,13 @@ def calculate_skill_gaps(target_role: str, current_skills: Dict[str, int]) -> Li
     
     current_skills: Dictionary mapping skill_id to mastery_level (0 to 3)
     """
-    if target_role not in MOCK_ROLE_REQUIREMENTS:
+    role_requirements = get_role_requirements()
+    
+    if target_role not in role_requirements:
         # Default to a generic requirement if role is unknown
-        required_skills = MOCK_ROLE_REQUIREMENTS["role_data_analyst"]
+        required_skills = role_requirements.get("role_data_analyst", {})
     else:
-        required_skills = MOCK_ROLE_REQUIREMENTS[target_role]
+        required_skills = role_requirements[target_role]
 
     gaps = []
 

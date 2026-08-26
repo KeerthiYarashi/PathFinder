@@ -54,12 +54,27 @@ def generate_learner_timeline(learner_id: str, db: Client) -> LearningTimeline:
     if not gap_analysis.gaps:
         raise ValueError("No skill gaps found. Cannot generate path.")
         
+    # Get learner mastery dict
+    skills_response = db.table("learner_skills").select("skill_id, mastery_level").eq("learner_id", learner_id).execute()
+    learner_mastery = {}
+    if skills_response.data:
+        for row in skills_response.data:
+            learner_mastery[row["skill_id"]] = row["mastery_level"]
+            
+    from services.vector_store import VectorStoreService
+    from engines.recommendation import RecommendationEngine
     from engines.path_generator import generate_timeline
+    
+    vector_store = VectorStoreService()
+    recommendation_engine = RecommendationEngine(vector_store)
+    
     timeline = generate_timeline(
         learner_id=learner_id,
         target_role=gap_analysis.target_role,
         skill_gaps=gap_analysis.gaps,
         time_budget=time_budget,
-        difficulty=difficulty
+        difficulty=difficulty,
+        recommendation_engine=recommendation_engine,
+        learner_mastery=learner_mastery
     )
     return timeline
