@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     EMBEDDING_MODEL: str = "models/text-embedding-004"
     VECTOR_COLLECTION: str = "learning_resources"
 
+    # Apify
+    APIFY_API_TOKEN: str = ""
+
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 
 settings = Settings()

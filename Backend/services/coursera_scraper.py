@@ -1,11 +1,11 @@
 import os
 import requests
 from typing import List, Dict
+from core.config import settings
 
 class CourseraScraperService:
     def __init__(self):
-        # We assume the user will provide an Apify API token in the environment
-        self.apify_token = os.environ.get("APIFY_API_TOKEN", "")
+        self.apify_token = settings.APIFY_API_TOKEN
         self.actor_id = "reapxdev~coursera-scraper"
 
     def search_courses(self, query: str) -> List[Dict]:
