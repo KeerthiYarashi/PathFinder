@@ -3,13 +3,17 @@ from collections import deque
 from schemas.path import SkillGap
 from schemas.timeline import LearningTimeline, Week, Module
 
-# Mock Graph: What skill must be learned BEFORE another skill
-# e.g., "dl_neural_networks" requires "ml_basics" and "math_probability"
-MOCK_PREREQUISITES = {
-    "ml_basics": ["math_probability", "python_pandas"],
-    "dl_neural_networks": ["ml_basics"],
-    "sql_advanced": ["sql_basics"],
-}
+import json
+import os
+
+def get_prerequisites() -> Dict[str, List[str]]:
+    data_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'prerequisites.json')
+    try:
+        with open(data_path, 'r') as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Warning: Could not load prerequisites.json: {e}")
+        return {}
 
 def topological_sort_skills(skill_gaps: List[SkillGap]) -> List[SkillGap]:
     """
@@ -23,7 +27,7 @@ def topological_sort_skills(skill_gaps: List[SkillGap]) -> List[SkillGap]:
     in_degree = {skill_id: 0 for skill_id in gap_skill_ids}
     adj_list = {skill_id: [] for skill_id in gap_skill_ids}
     
-    for target, prereqs in MOCK_PREREQUISITES.items():
+    for target, prereqs in get_prerequisites().items():
         if target in gap_skill_ids:
             for prereq in prereqs:
                 if prereq in gap_skill_ids:
@@ -64,7 +68,9 @@ def generate_timeline(
     target_role: str, 
     skill_gaps: List[SkillGap], 
     time_budget: float, 
-    difficulty: str
+    difficulty: str,
+    recommendation_engine,
+    learner_mastery: Dict[str, int]
 ) -> LearningTimeline:
     """
     Sorts gaps, fetches resources, and chunks them into weeks.
@@ -77,16 +83,40 @@ def generate_timeline(
     current_week_hours = 0.0
     week_number = 1
     
+    learner_profile = {
+        "time_budget_hours": time_budget,
+        "difficulty_tolerance": difficulty,
+        "preferred_format": "video"
+    }
+
     for gap in sorted_gaps:
         from schemas.timeline import Resource
-        # STUB: Person B will implement Vector Search and Recommendation Scoring here.
-        # For now, returning dummy resource so Person A's graph sorting logic can be tested.
-        best_resource = Resource(
-            id="mock_123",
-            title=f"Mock Resource for {gap.skill_name}",
-            time_estimate_hours=2.0,
-            difficulty="normal"
+        
+        recommended = recommendation_engine.get_best_resource_for_gap(
+            gap=gap,
+            learner_profile=learner_profile,
+            learner_mastery=learner_mastery
         )
+        
+        if recommended:
+            best_resource = Resource(
+                id=recommended.resource_id,
+                title=recommended.title,
+                time_estimate_hours=recommended.duration_hours,
+                difficulty=str(recommended.difficulty_level),
+                url=recommended.url,
+                format_type=recommended.format_type,
+                explanation_summary=recommended.explanation_summary,
+                scoring_factors=recommended.scoring.model_dump()
+            )
+        else:
+            # Fallback if vector store has no matches
+            best_resource = Resource(
+                id=f"fallback_{gap.skill_id}",
+                title=f"Basics of {gap.skill_name}",
+                time_estimate_hours=2.0,
+                difficulty="normal"
+            )
         
         est_hours = best_resource.time_estimate_hours
         

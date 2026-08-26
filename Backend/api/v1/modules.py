@@ -3,6 +3,7 @@ from supabase import Client
 from db.database import get_supabase
 from schemas.progress import ModuleAction, ActionResponse, ActionType
 from engines.adaptive import handle_struggling_action, handle_complete_action
+from services.llm import LLMService
 
 router = APIRouter()
 
@@ -38,3 +39,51 @@ def log_module_action(action: ModuleAction, db: Client = Depends(get_supabase)):
             
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to process action: {str(e)}")
+
+@router.get("/{module_id}/explanation")
+def get_explanation(module_id: str, learner_id: str, db: Client = Depends(get_supabase)):
+    # 1. Fetch learner's path
+    path_response = db.table("learning_paths").select("path_data").eq("learner_id", learner_id).execute()
+    
+    if not path_response.data:
+        raise HTTPException(404, "No path found for learner")
+        
+    path_data = path_response.data[0].get("path_data", {})
+    resource_scoring = None
+    
+    # 2. Find the module in the path
+    for week in path_data.get("weeks", []):
+        for mod in week.get("modules", []):
+            res = mod.get("resource", {})
+            if res.get("id") == module_id:
+                resource_scoring = res.get("scoring_factors")
+                break
+        if resource_scoring:
+            break
+            
+    if not resource_scoring:
+        raise HTTPException(404, "Module not found in learner's path or no scoring data available")
+        
+    # 3. Fetch cached explanation from recommendations_cache
+    rec = db.table("recommendations_cache").select("explanation_text").eq("learner_id", learner_id).eq("resource_id", module_id).execute()
+    
+    if rec.data and rec.data[0].get("explanation_text"):
+        return {"scoring_factors": resource_scoring, "explanation": rec.data[0]["explanation_text"]}
+        
+    # 4. Generate via LLM
+    llm_service = LLMService()
+    
+    learner_response = db.table("learners").select("*").eq("id", learner_id).execute()
+    learner_context = learner_response.data[0] if learner_response.data else {}
+    
+    explanation = llm_service.generate_explanation(resource_scoring, learner_context)
+    
+    # 5. Cache it
+    db.table("recommendations_cache").upsert({
+        "learner_id": learner_id,
+        "resource_id": module_id,
+        "scoring_factors": resource_scoring,
+        "explanation_text": explanation
+    }).execute()
+    
+    return {"scoring_factors": resource_scoring, "explanation": explanation}

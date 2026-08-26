@@ -7,6 +7,9 @@ class Resource(BaseModel):
     time_estimate_hours: float
     difficulty: str
     url: str | None = None
+    format_type: str | None = None
+    explanation_summary: str | None = None
+    scoring_factors: Dict[str, float] | None = None
 
 class Module(BaseModel):
     skill_id: str

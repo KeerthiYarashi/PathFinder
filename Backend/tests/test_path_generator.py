@@ -23,6 +23,24 @@ def test_topological_sort():
     assert math_index < ml_index
     assert pandas_index < ml_index
 
+class MockRecommendedResource:
+    def __init__(self, skill_id, skill_name):
+        self.resource_id = f"mock_{skill_id}"
+        self.title = skill_name
+        self.duration_hours = 2.0
+        self.difficulty_level = 2
+        self.url = ""
+        self.format_type = "video"
+        self.explanation_summary = "mock"
+        
+        class MockScoring:
+            def model_dump(self): return {}
+        self.scoring = MockScoring()
+
+class MockRecommendationEngine:
+    def get_best_resource_for_gap(self, gap, learner_profile, learner_mastery, reward_history=None):
+        return MockRecommendedResource(gap.skill_id, gap.skill_name)
+
 def test_timeline_chunking():
     gaps = [
         SkillGap(skill_id="math_probability", skill_name="Probability", current_level=0, target_level=3, gap_size=3, priority="high"),
@@ -30,8 +48,10 @@ def test_timeline_chunking():
         SkillGap(skill_id="ml_basics", skill_name="Machine Learning", current_level=1, target_level=3, gap_size=2, priority="medium")
     ]
     
+    mock_engine = MockRecommendationEngine()
+    
     # Generate timeline with a 5 hour per week budget
-    timeline = generate_timeline("learner_123", "target_123", gaps, 5.0, "normal")
+    timeline = generate_timeline("learner_123", "target_123", gaps, 5.0, "normal", mock_engine, {})
     
     # Since each course takes 2.0 hours, and budget is 5, we expect 2 courses in week 1, and 1 course in week 2
     # Total gaps = 3 -> Total weeks = 2

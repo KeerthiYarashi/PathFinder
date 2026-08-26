@@ -1,0 +1,10 @@
+{
+  "ml_basics": ["math_probability", "python_pandas"],
+  "dl_neural_networks": ["ml_basics", "math_linear_algebra"],
+  "python_pandas": ["python_basics"],
+  "sql_advanced": ["sql_basics"],
+  "react_basics": ["js_basics", "html_css"],
+  "node_basics": ["js_basics"],
+  "aws_architecture": ["cloud_fundamentals"],
+  "docker_k8s": ["cloud_fundamentals"]
+}

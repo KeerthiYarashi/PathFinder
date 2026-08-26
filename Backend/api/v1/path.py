@@ -16,6 +16,7 @@ def get_learner_gaps(learner_id: str, db: Client = Depends(get_supabase)):
     """
     return analyze_learner_gaps(learner_id, db)
 
+@router.get("/recommendations/{learner_id}")
 def get_learner_recommendations(learner_id: str, db: Client = Depends(get_supabase)):
     """
     Finds the learner's biggest skill gap, searches for resources using pgvector,
@@ -39,22 +40,33 @@ def get_learner_recommendations(learner_id: str, db: Client = Depends(get_supaba
     # Pick the biggest/most important gap
     top_gap = gap_analysis.gaps[0]
     
-    from schemas.timeline import Resource
-    # STUB: Person B will implement Vector Search and Recommendation Scoring here.
-    # For now, returning dummy resources so Person C's API works.
-    ranked_resources = [
-        Resource(
-            id="mock_123",
-            title=f"Mock Resource for {top_gap.skill_name}",
-            time_estimate_hours=2.0,
-            difficulty="normal"
-        )
-    ]
+    # Get learner mastery dict
+    skills_response = db.table("learner_skills").select("skill_id, mastery_level").eq("learner_id", learner_id).execute()
+    learner_mastery = {}
+    if skills_response.data:
+        for row in skills_response.data:
+            learner_mastery[row["skill_id"]] = row["mastery_level"]
+            
+    from services.vector_store import VectorStoreService
+    from engines.recommendation import RecommendationEngine
+    
+    vector_store = VectorStoreService()
+    recommendation_engine = RecommendationEngine(vector_store)
+    
+    recommended = recommendation_engine.get_best_resource_for_gap(
+        gap=top_gap,
+        learner_profile=learner,
+        learner_mastery=learner_mastery
+    )
+    
+    ranked_resources = []
+    if recommended:
+        ranked_resources.append(recommended)
     
     return {
         "learner_id": learner_id,
         "targeted_skill": top_gap.skill_name,
-        "recommendations": ranked_resources[:3] # Return top 3
+        "recommendations": ranked_resources
     }
 
 @router.get("/generate/{learner_id}", response_model=LearningTimeline)
@@ -68,5 +80,27 @@ def generate_learner_path(learner_id: str, db: Client = Depends(get_supabase)):
         if str(e) == "Learner not found":
             raise HTTPException(status_code=404, detail="Learner not found")
         raise HTTPException(status_code=400, detail=str(e))
+
+from schemas.nba import NextBestAction
+from engines.nba import NBAEngine
+
+@router.get("/nba/{learner_id}", response_model=NextBestAction)
+def get_nba(learner_id: str, db: Client = Depends(get_supabase)):
+    # Fetch learner's path
+    path_response = db.table("learning_paths").select("path_data").eq("learner_id", learner_id).execute()
+    
+    modules = []
+    if path_response.data:
+        path_data = path_response.data[0].get("path_data", {})
+        for week in path_data.get("weeks", []):
+            modules.extend(week.get("modules", []))
+            
+    # Mock some data for the NBA engine (in production this would come from progress_log)
+    recent_scores = [0.85] 
+    is_behind = False
+    last_activity_days = 2
+    
+    engine = NBAEngine()
+    return engine.compute(modules, recent_scores, is_behind, last_activity_days)
 
 

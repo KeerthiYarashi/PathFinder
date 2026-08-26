@@ -1,5 +1,6 @@
 from supabase import Client
-from engines.path_generator import MOCK_PREREQUISITES
+from engines.path_generator import get_prerequisites
+from services.data_access import generate_learner_timeline
 import random
 
 def handle_struggling_action(learner_id: str, skill_id: str, db: Client) -> str:
@@ -8,7 +9,7 @@ def handle_struggling_action(learner_id: str, skill_id: str, db: Client) -> str:
     This function finds the prerequisite and lowers their mastery score in the database,
     which will force the Path Generator to inject it as a refresher course.
     """
-    prereqs = MOCK_PREREQUISITES.get(skill_id, [])
+    prereqs = get_prerequisites().get(skill_id, [])
     
     if not prereqs:
         return f"User is struggling with {skill_id}, but it has no prerequisites to refresh. We will just recommend a different resource for the same skill."
@@ -35,17 +36,27 @@ def handle_struggling_action(learner_id: str, skill_id: str, db: Client) -> str:
         "mastery_level": new_level
     }).execute()
     
-    return f"Downgraded prerequisite '{target_prereq}' to level {new_level}. The path must be recalculated."
+    # 4. Regenerate timeline
+    try:
+        new_timeline = generate_learner_timeline(learner_id, db)
+        db.table("learning_paths").upsert({
+            "learner_id": learner_id,
+            "path_data": new_timeline.model_dump()
+        }).execute()
+    except Exception as e:
+        print(f"Error recalculating path: {e}")
+    
+    return f"Downgraded prerequisite '{target_prereq}' to level {new_level}. The path has been recalculated."
 
 def handle_complete_action(learner_id: str, skill_id: str, db: Client) -> str:
     """
     Marks a skill as mastered.
     """
-    # Upsert mastery level to maximum (e.g. 5)
+    # Upsert mastery level to maximum (e.g. 3)
     db.table("learner_skills").upsert({
         "learner_id": learner_id,
         "skill_id": skill_id,
-        "mastery_level": 5
+        "mastery_level": 3
     }).execute()
     
     return f"Successfully mastered {skill_id}! The path must be recalculated to remove this from the gaps."

@@ -14,13 +14,7 @@ def test_calculate_skill_gaps():
     # Execute
     gaps = calculate_skill_gaps(target_role, current_skills)
     
-    # We expect 4 gaps total because MOCK_ROLE_REQUIREMENTS has 4 skills
-    # python_basics: 4
-    # python_pandas: 3
-    # ml_basics: 3
-    # dl_neural_networks: 2
-    
-    assert len(gaps) == 4
+    assert len(gaps) == 5
     
     # Check Math gap
     math_gap = next((g for g in gaps if g.skill_id == "math_probability"), None)
@@ -34,7 +28,7 @@ def test_calculate_skill_gaps():
     assert ml_gap.gap_size == 2
     assert ml_gap.priority == "medium"
     
-    # Check Pandas gap (implicitly 0)
+    # Check Pandas gap (implicitly 0 current)
     pandas_gap = next((g for g in gaps if g.skill_id == "python_pandas"), None)
     assert pandas_gap is not None
     assert pandas_gap.gap_size == 3
