@@ -73,3 +73,6 @@ Thumbs.db
 
 # Supabase Local
 .supabase/
+
+# Fix for Frontend lib
+!Frontend/src/lib/
