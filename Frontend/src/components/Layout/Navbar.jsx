@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useLearnerStore } from '../../store/learnerStore'
-import { Menu, X, Compass, LayoutDashboard, Target, Settings, LogOut } from 'lucide-react'
+import { Menu, X, Compass, LayoutDashboard, Target, Settings, LogOut, Sun, Moon } from 'lucide-react'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
   const theme = useLearnerStore((state) => state.theme)
+  const toggleTheme = useLearnerStore((state) => state.toggleTheme)
   const signOut = useLearnerStore((state) => state.signOut)
   const isDark = theme === 'dark'
 
@@ -20,25 +21,29 @@ function Navbar() {
   const isActive = (path) => location.pathname === path
 
   return (
-    <nav className={`sticky top-0 z-50 border-b transition-all duration-300 px-6 py-4 backdrop-blur-md ${
+    <nav className={`sticky top-0 z-50 border-b transition-all duration-300 px-6 py-3.5 backdrop-blur-md ${
       isDark 
         ? 'border-slate-800 bg-slate-950/85 text-slate-100' 
-        : 'border-slate-200 bg-white/85 text-slate-800 shadow-sm'
+        : 'border-indigo-100/80 bg-white/90 text-slate-800 shadow-sm shadow-indigo-500/5'
     }`}>
       <div className="mx-auto flex max-w-7xl items-center justify-between">
         
         <Link
           to="/"
-          className={`flex items-center gap-2 text-xl font-bold tracking-wide hover:opacity-90 transition-opacity ${
+          className={`flex items-center gap-2.5 text-xl font-black tracking-tight hover:opacity-90 transition-opacity ${
             isDark ? 'text-indigo-400' : 'text-indigo-600'
           }`}
         >
-          <Compass className="h-6 w-6 text-indigo-500 animate-spin-slow" />
-          <span>PathFinder</span>
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white shadow-md shadow-indigo-500/25">
+            <Compass className="h-5 w-5 animate-spin-slow" />
+          </div>
+          <span className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 bg-clip-text text-transparent dark:from-indigo-400 dark:to-violet-400">
+            PathFinder
+          </span>
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden gap-8 md:flex">
+        <div className="hidden items-center gap-7 md:flex">
           {navLinks.map((link) => {
             const Icon = link.icon
             const active = isActive(link.path)
@@ -46,14 +51,14 @@ function Navbar() {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center gap-2 text-sm font-semibold transition-all duration-200 ${
                   active
                     ? isDark 
-                      ? 'text-indigo-400 font-semibold' 
-                      : 'text-indigo-600 font-semibold'
+                      ? 'text-indigo-400 font-bold' 
+                      : 'text-indigo-600 font-bold bg-indigo-50/80 px-3 py-1.5 rounded-xl'
                     : isDark 
                       ? 'text-slate-300 hover:text-white' 
-                      : 'text-slate-600 hover:text-slate-900'
+                      : 'text-slate-600 hover:text-indigo-600 hover:bg-slate-50 px-3 py-1.5 rounded-xl'
                 }`}
               >
                 <Icon className={`h-4 w-4 ${
@@ -65,10 +70,23 @@ function Navbar() {
               </Link>
             )
           })}
+
+          {/* Theme Quick Toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label="Toggle Theme"
+            className={`p-2 rounded-xl border transition-all ${
+              isDark 
+                ? 'border-slate-800 bg-slate-900 text-yellow-400 hover:bg-slate-800' 
+                : 'border-indigo-100 bg-indigo-50/60 text-indigo-600 hover:bg-indigo-100 shadow-sm'
+            }`}
+          >
+            {isDark ? <Sun className="h-4 w-4 fill-yellow-400" /> : <Moon className="h-4 w-4 fill-indigo-600" />}
+          </button>
           
           <button
             onClick={() => signOut()}
-            className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-2 text-sm font-semibold transition-all duration-200 ${
               isDark 
                 ? 'text-slate-300 hover:text-red-400' 
                 : 'text-slate-600 hover:text-red-600'

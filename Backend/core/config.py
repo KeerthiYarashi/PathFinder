@@ -9,8 +9,8 @@ class Settings(BaseSettings):
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:5173", "https://pathfinder-frontend-4vac.onrender.com"]
 
     # Supabase config
-    SUPABASE_URL: str
-    SUPABASE_KEY: str
+    SUPABASE_URL: str = ""
+    SUPABASE_KEY: str = ""
     SUPABASE_DB_URL: str = "" # PostgreSQL connection string for pgvector
     
     # LLM & AI config

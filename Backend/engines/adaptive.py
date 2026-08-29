@@ -24,8 +24,11 @@ def handle_struggling_action(learner_id: str, skill_id: str, db: Client) -> str:
     response = db.table("learner_skills").select("mastery_level").eq("learner_id", learner_id).eq("skill_id", target_prereq).execute()
     
     current_level = 3 # Assume they mastered it if we can't find it
-    if response.data:
-        current_level = response.data[0].get("mastery_level", 3)
+    if response.data and isinstance(response.data, list) and len(response.data) > 0 and isinstance(response.data[0], dict):
+        try:
+            current_level = int(response.data[0].get("mastery_level", 3))
+        except (ValueError, TypeError):
+            current_level = 3
         
     # 2. Downgrade it (but don't go below 1)
     new_level = max(1, current_level - 1)

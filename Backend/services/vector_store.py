@@ -1,23 +1,39 @@
 from core.config import settings
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_postgres import PGVector
-import torch
+
+try:
+    from langchain_huggingface import HuggingFaceEmbeddings
+except ImportError:
+    HuggingFaceEmbeddings = None
+
+try:
+    from langchain_postgres import PGVector
+except ImportError:
+    PGVector = None
+
+try:
+    import torch
+except ImportError:
+    torch = None
 
 class VectorStoreService:
     def __init__(self):
-        # Auto-detect CUDA for GPU acceleration on user's RTX 3050
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        print(f"Initializing HuggingFaceEmbeddings on device: {device}")
-        
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="all-MiniLM-L6-v2",
-            model_kwargs={'device': device},
-            encode_kwargs={'normalize_embeddings': True}
-        )
         self.collection_name = settings.VECTOR_COLLECTION
         self.connection = settings.SUPABASE_DB_URL
+        
+        if HuggingFaceEmbeddings:
+            device = "cuda" if (torch and torch.cuda.is_available()) else "cpu"
+            print(f"Initializing HuggingFaceEmbeddings on device: {device}")
+            self.embeddings = HuggingFaceEmbeddings(
+                model_name="all-MiniLM-L6-v2",
+                model_kwargs={'device': device},
+                encode_kwargs={'normalize_embeddings': True}
+            )
+        else:
+            self.embeddings = None
 
-    def get_store(self) -> PGVector:
+    def get_store(self):
+        if not PGVector or not self.embeddings:
+            raise RuntimeError("PGVector and HuggingFaceEmbeddings are required for vector store operations.")
         return PGVector(
             embeddings=self.embeddings,
             collection_name=self.collection_name,

@@ -11,7 +11,7 @@ os.environ["YOUTUBE_API_KEY"] = "mock"
 # Add Backend to path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
-from schemas.learner import ExtractedProfile
+from schemas.learner import ExtractedProfile, SkillProficiency, LearningPreferences
 from api.v1.onboarding import shared_learning_pipeline
 from services.resource_acquisition.base import NormalizedResource
 
@@ -24,43 +24,33 @@ class MockVectorStoreService:
         self.added_resources.extend(resources)
         
     def search_resources(self, skill_name, k=10, **kwargs):
-        # Return a mix of fake old and fake new
         return [
-            {"resource_id": "coursera_123", "title": f"Old Coursera {skill_name}", "duration_hours": 10, "difficulty_level": 2},
-            {"resource_id": f"apify_{skill_name}", "title": f"New Live {skill_name}", "duration_hours": 5, "difficulty_level": 2}
+            NormalizedResource(
+                id=f"res_{skill_name}_mock",
+                title=f"Mastering {skill_name}",
+                provider="Coursera",
+                format="video",
+                skill_tag=skill_name,
+                url=f"https://coursera.org/{skill_name}",
+                difficulty="intermediate",
+                time_estimate_hours=3.0,
+                rating=4.8,
+                reviews_count=120,
+                cost="free"
+            )
         ]
 
+class MockLLMService:
+    def generate_explanation(self, resource_title, role, skill):
+        return f"This course teaches {skill} which is critical for {role}."
+
 class MockApifyClient:
-    def acquire(self, query, max_results=3):
-        return [NormalizedResource(
-            id=f"apify_{query}",
-            title=f"Apify Result for {query}",
-            description="Mock",
-            provider="Apify",
-            source="apify",
-            url=f"http://apify.com/{query}",
-            duration_hours=2.0,
-            difficulty_level=2,
-            skills=[query]
-        )]
+    def search_coursera(self, query, limit=5):
+        return []
 
 class MockYouTubeClient:
-    def acquire(self, query, max_results=3):
-        return [NormalizedResource(
-            id=f"yt_{query}",
-            title=f"YT Result for {query}",
-            description="Mock",
-            provider="YouTube",
-            source="youtube",
-            url=f"http://youtube.com/{query}",
-            duration_hours=1.0,
-            difficulty_level=2,
-            skills=[query]
-        )]
-
-class MockLLMService:
-    def generate_search_queries(self, missing_skills, target_role):
-        return {skill: f"{skill} tutorial for {target_role}" for skill in missing_skills}
+    def search_videos(self, query, max_results=5):
+        return []
 
 # Apply Mocks
 import api.v1.onboarding
@@ -74,10 +64,12 @@ services.resource_acquisition.service.YouTubeClient = lambda: MockYouTubeClient(
 def test_pipeline():
     profile = ExtractedProfile(
         target_role="role_ml_engineer",
-        current_skills={"python": 3, "sql": 1},
-        required_skills={"python": 4, "sql": 3, "docker": 2, "fastapi": 2},
-        time_budget_hours=10.0,
-        difficulty_tolerance="high"
+        current_skills=[
+            SkillProficiency(skill="python", proficiency="Advanced", evidence="3 years Python"),
+            SkillProficiency(skill="sql", proficiency="Beginner", evidence="1 year SQL")
+        ],
+        required_skills=["python", "sql", "docker", "fastapi"],
+        learning_preferences=LearningPreferences(weekly_hours=10.0, difficulty="high")
     )
     
     print("Running Shared Learning Pipeline...")

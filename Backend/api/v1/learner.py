@@ -19,13 +19,28 @@ def create_learner(learner_in: LearnerCreate, db: Client = Depends(get_supabase)
     if hasattr(learner_in.difficulty_tolerance, 'value'):
         learner_data['difficulty_tolerance'] = learner_in.difficulty_tolerance.value
 
+    target_role = learner_data.pop('target_role', None)
+
     # Insert into Supabase
     response = db.table("learners").insert(learner_data).execute()
     
     if not response.data:
         raise HTTPException(status_code=400, detail="Could not create learner")
         
-    return response.data[0]
+    created_learner = response.data[0]
+    learner_id = created_learner.get("id")
+    
+    if target_role and learner_id:
+        try:
+            db.table("learning_goals").upsert({
+                "learner_id": learner_id,
+                "target_role_id": target_role
+            }).execute()
+        except Exception as e:
+            print(f"Warning: Could not save target_role to learning_goals: {e}")
+            
+    created_learner["target_role"] = target_role
+    return created_learner
 
 @router.get("/{learner_id}", response_model=LearnerResponse)
 def get_learner(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)) -> Any:

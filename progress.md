@@ -127,13 +127,13 @@
 
 ## Phase 3 — Testing & Demo Prep
 
-- [ ] T1 Unit test: skill_gap engine (test 5 scenarios)
-- [ ] T2 Unit test: path_generator Kahn's sort (no prereq violations)
-- [ ] T3 Unit test: recommendation scoring (same input → same output)
-- [ ] T4 Integration test: onboarding → path generation flow
-- [ ] T5 Integration test: struggling → refresher injection
-- [ ] T6 E2E: full demo path (3-minute script end-to-end)
-- [ ] T7 Pre-demo checklist execution
+- [x] T1 Unit test: skill_gap engine (test 5 scenarios)
+- [x] T2 Unit test: path_generator Kahn's sort (no prereq violations)
+- [x] T3 Unit test: recommendation scoring (same input → same output)
+- [x] T4 Integration test: onboarding → path generation flow
+- [x] T5 Integration test: struggling → refresher injection
+- [x] T6 E2E: full demo path (3-minute script end-to-end)
+- [x] T7 Pre-demo checklist execution
 
 ---
 
@@ -141,7 +141,8 @@
 
 | Phase | Total Steps | Done | Remaining |
 |-------|------------|------|-----------|
-| Phase 1 — AI Pipeline | 12 steps / ~55 microsteps | 0 | 55 |
-| Phase 2 — Frontend | 14 steps | 0 | 14 |
-| Phase 3 — Testing | 7 steps | 0 | 7 |
-| **Total** | **76 microsteps** | **0** | **76** |
+| Phase 1 — AI Pipeline | 12 steps / ~55 microsteps | 55 | 0 |
+| Phase 2 — Frontend | 14 steps | 14 | 0 |
+| Phase 3 — Testing | 7 steps | 7 | 0 |
+| **Total** | **76 microsteps** | **76** | **0** |
+

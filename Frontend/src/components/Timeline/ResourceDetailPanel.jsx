@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { X, ExternalLink, HelpCircle, BookOpen, Clock, BarChart3, Settings } from 'lucide-react'
 import ExplanationModal from './ExplanationModal'
 
-function ResourceDetailPanel({ module, onClose, onAction }) {
+function ResourceDetailPanel({ module, onClose, onAction, onTakeQuiz }) {
   const [showExplanation, setShowExplanation] = useState(false)
 
   const { resource } = module
@@ -141,6 +141,17 @@ function ResourceDetailPanel({ module, onClose, onAction }) {
                 <HelpCircle className="h-4 w-4" />
                 Why was this recommended?
               </button>
+
+              {/* Take Skill Assessment Quiz CTA */}
+              {onTakeQuiz && (
+                <button
+                  onClick={() => onTakeQuiz(module)}
+                  className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/15 border border-emerald-500/20 py-3 text-xs font-extrabold text-emerald-400 transition-colors"
+                >
+                  <BarChart3 className="h-4 w-4" />
+                  📝 Take Skill Quiz (Assess Mastery)
+                </button>
+              )}
             </div>
           )}
 

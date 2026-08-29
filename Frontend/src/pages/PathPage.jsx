@@ -19,6 +19,7 @@ import {
 // Sub-components will be imported from separate files in Step 7.
 // For now, inline simplified versions so Step 6 compiles and works immediately.
 import ResourceDetailPanel from '../components/Timeline/ResourceDetailPanel'
+import QuizModal from '../components/Assessment/QuizModal'
 
 function PathPage() {
   const navigate = useNavigate()
@@ -29,10 +30,12 @@ function PathPage() {
     isLoading, 
     isRecalculating,
     generateTimeline,
-    logModuleAction
+    logModuleAction,
+    updateSkillLevel
   } = useLearnerStore()
 
   const [selectedModule, setSelectedModule] = useState(null)
+  const [activeQuiz, setActiveQuiz] = useState(null)
 
   // Fetch / generate timeline on mount
   useEffect(() => {
@@ -259,10 +262,29 @@ function PathPage() {
           <ResourceDetailPanel 
             module={selectedModule} 
             onClose={() => setSelectedModule(null)} 
+            onTakeQuiz={(mod) => {
+              setSelectedModule(null)
+              setActiveQuiz({ id: mod.skill_id, name: mod.skill_name })
+            }}
             onAction={async (actionType) => {
               const skillId = selectedModule.skill_id
               setSelectedModule(null)
               await logModuleAction(skillId, actionType)
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Quiz Modal Overlay */}
+      <AnimatePresence>
+        {activeQuiz && (
+          <QuizModal
+            skillId={activeQuiz.id}
+            skillName={activeQuiz.name}
+            onClose={() => setActiveQuiz(null)}
+            onComplete={(scorePct) => {
+              updateSkillLevel(activeQuiz.id, scorePct)
+              setActiveQuiz(null)
             }}
           />
         )}

@@ -15,35 +15,199 @@
       "sql_basics": {"name": "SQL Fundamentals", "target_level": 3},
       "sql_advanced": {"name": "Advanced SQL & Aggregations", "target_level": 2}
     },
+    "role_ai_engineer": {
+      "python_basics": {"name": "Python", "target_level": 3},
+      "ml_basics": {"name": "Machine Learning", "target_level": 3},
+      "dl_neural_networks": {"name": "Deep Learning", "target_level": 3},
+      "llm_engineering": {"name": "LLMs", "target_level": 3},
+      "rag_architecture": {"name": "RAG", "target_level": 2},
+      "api_development": {"name": "APIs", "target_level": 2},
+      "ml_deployment": {"name": "Deployment", "target_level": 2}
+    },
     "role_fullstack_dev": {
       "html_css": {"name": "HTML & CSS", "target_level": 3},
-      "js_basics": {"name": "JavaScript Fundamentals", "target_level": 3},
-      "react_basics": {"name": "React.js", "target_level": 2},
-      "node_basics": {"name": "Node.js Basics", "target_level": 2},
-      "sql_basics": {"name": "SQL Fundamentals", "target_level": 2}
+      "js_basics": {"name": "JavaScript", "target_level": 3},
+      "react_basics": {"name": "React.js", "target_level": 3},
+      "node_basics": {"name": "Node.js", "target_level": 2},
+      "sql_basics": {"name": "Database Design & SQL", "target_level": 2},
+      "api_development": {"name": "REST APIs", "target_level": 2},
+      "git_deployment": {"name": "Git & Deployment", "target_level": 2}
     },
-    "role_cloud_architect": {
-      "python_basics": {"name": "Python Basics", "target_level": 2},
-      "cloud_fundamentals": {"name": "Cloud Fundamentals", "target_level": 3},
-      "aws_architecture": {"name": "AWS Architecture", "target_level": 3},
-      "docker_k8s": {"name": "Docker and Kubernetes", "target_level": 2}
+    "role_data_scientist": {
+      "python_basics": {"name": "Python", "target_level": 3},
+      "math_probability": {"name": "Statistics & Probability", "target_level": 3},
+      "python_pandas": {"name": "Pandas Data Wrangling", "target_level": 3},
+      "ml_basics": {"name": "Machine Learning", "target_level": 3},
+      "data_visualization": {"name": "Data Visualization", "target_level": 2},
+      "sql_basics": {"name": "SQL", "target_level": 2}
+    },
+    "role_cybersecurity_analyst": {
+      "computer_networks": {"name": "Computer Networks", "target_level": 3},
+      "network_security": {"name": "Network Security", "target_level": 3},
+      "threat_analysis": {"name": "Threat Analysis", "target_level": 3},
+      "applied_cryptography": {"name": "Applied Cryptography", "target_level": 2},
+      "incident_response": {"name": "Incident Response", "target_level": 2},
+      "linux_security": {"name": "Linux Security", "target_level": 2}
+    },
+    "role_business_analyst": {
+      "business_process_modeling": {"name": "Business Process Modeling", "target_level": 3},
+      "requirements_gathering": {"name": "Requirements Gathering", "target_level": 3},
+      "excel_data_analysis": {"name": "Data Analysis & Excel", "target_level": 3},
+      "sql_basics": {"name": "SQL", "target_level": 2},
+      "bi_dashboards": {"name": "Tableau & Power BI", "target_level": 2},
+      "agile_fundamentals": {"name": "Agile Fundamentals", "target_level": 2}
+    },
+    "role_product_manager": {
+      "product_discovery": {"name": "Product Discovery", "target_level": 3},
+      "user_research": {"name": "User Research", "target_level": 3},
+      "wireframing_ux": {"name": "Wireframing & UX", "target_level": 3},
+      "agile_scrum": {"name": "Agile & Scrum", "target_level": 3},
+      "product_analytics": {"name": "Product Analytics & Metrics", "target_level": 2},
+      "gtm_strategy": {"name": "Go-To-Market Strategy", "target_level": 2}
+    },
+    "role_project_manager": {
+      "project_planning": {"name": "Project Planning & Scheduling", "target_level": 3},
+      "risk_management": {"name": "Risk Management", "target_level": 3},
+      "budgeting_resources": {"name": "Budgeting & Resource Allocation", "target_level": 2},
+      "agile_waterfall": {"name": "Agile & Waterfall", "target_level": 3},
+      "stakeholder_communication": {"name": "Stakeholder Communication", "target_level": 3},
+      "jira_tooling": {"name": "JIRA & Project Tools", "target_level": 2}
+    },
+    "role_management_consultant": {
+      "structured_problem_solving": {"name": "Structured Problem Solving", "target_level": 3},
+      "financial_modeling": {"name": "Financial Modeling", "target_level": 3},
+      "market_sizing_strategy": {"name": "Market Sizing & Strategy", "target_level": 3},
+      "slide_design_storytelling": {"name": "Slide Design & Storytelling", "target_level": 2},
+      "organizational_change": {"name": "Organizational Change", "target_level": 2},
+      "client_presentations": {"name": "Client Presentations", "target_level": 2}
+    },
+    "role_financial_analyst": {
+      "financial_accounting": {"name": "Financial Accounting", "target_level": 3},
+      "financial_modeling": {"name": "Financial Modeling & Valuation", "target_level": 3},
+      "excel_financial": {"name": "Excel & Financial Functions", "target_level": 3},
+      "corporate_finance": {"name": "Corporate Finance", "target_level": 2},
+      "ratio_analysis": {"name": "Ratio Analysis", "target_level": 2},
+      "financial_reporting": {"name": "Financial Reporting", "target_level": 2}
+    },
+    "role_accountant": {
+      "gaap_ifrs": {"name": "GAAP & IFRS Standards", "target_level": 3},
+      "general_ledger": {"name": "General Ledger Accounting", "target_level": 3},
+      "auditing_controls": {"name": "Auditing & Internal Controls", "target_level": 2},
+      "tax_compliance": {"name": "Tax Compliance", "target_level": 2},
+      "financial_statements": {"name": "Financial Statements", "target_level": 3},
+      "erp_accounting": {"name": "Accounting Software & ERP", "target_level": 2}
+    },
+    "role_investment_analyst": {
+      "equity_research": {"name": "Equity Research", "target_level": 3},
+      "portfolio_management": {"name": "Portfolio Management", "target_level": 3},
+      "dcf_valuation": {"name": "DCF & Asset Valuation", "target_level": 3},
+      "macroeconomic_analysis": {"name": "Macroeconomic Analysis", "target_level": 2},
+      "risk_return_metrics": {"name": "Risk & Return Metrics", "target_level": 2},
+      "capital_markets": {"name": "Capital Markets", "target_level": 2}
+    },
+    "role_risk_analyst": {
+      "quant_risk_modeling": {"name": "Quantitative Risk Modeling", "target_level": 3},
+      "credit_risk_assessment": {"name": "Credit Risk Assessment", "target_level": 3},
+      "market_risk_var": {"name": "Market Risk & VaR", "target_level": 2},
+      "regulatory_compliance": {"name": "Regulatory Compliance", "target_level": 2},
+      "stress_testing": {"name": "Stress Testing", "target_level": 2},
+      "sql_python_risk": {"name": "SQL & Risk Scripting", "target_level": 2}
+    },
+    "role_ui_ux_designer": {
+      "design_fundamentals": {"name": "Design Fundamentals", "target_level": 3},
+      "ux_research": {"name": "UX Research", "target_level": 3},
+      "wireframing": {"name": "Wireframing", "target_level": 3},
+      "figma_mastery": {"name": "Figma", "target_level": 3},
+      "prototyping": {"name": "Prototyping", "target_level": 2},
+      "usability_testing": {"name": "Usability Testing", "target_level": 2}
+    },
+    "role_graphic_designer": {
+      "visual_design_principles": {"name": "Visual Design Principles", "target_level": 3},
+      "typography_color": {"name": "Typography & Color Theory", "target_level": 3},
+      "photoshop": {"name": "Adobe Photoshop", "target_level": 3},
+      "illustrator": {"name": "Adobe Illustrator", "target_level": 3},
+      "brand_identity": {"name": "Brand Identity Design", "target_level": 2},
+      "layout_composition": {"name": "Layout & Composition", "target_level": 2}
+    },
+    "role_video_editor": {
+      "video_editing_principles": {"name": "Video Editing Principles", "target_level": 3},
+      "premiere_davinci": {"name": "Premiere Pro & DaVinci", "target_level": 3},
+      "motion_graphics": {"name": "Motion Graphics & After Effects", "target_level": 2},
+      "sound_design": {"name": "Sound Design & Audio Mixing", "target_level": 2},
+      "color_grading": {"name": "Color Grading", "target_level": 2},
+      "storyboarding": {"name": "Storyboarding", "target_level": 2}
+    },
+    "role_content_creator": {
+      "storytelling_scriptwriting": {"name": "Storytelling & Scriptwriting", "target_level": 3},
+      "video_production": {"name": "Video & Photo Production", "target_level": 3},
+      "social_strategy": {"name": "Social Media Strategy", "target_level": 3},
+      "audience_analytics": {"name": "Audience Analytics", "target_level": 2},
+      "content_editing": {"name": "Content Editing", "target_level": 2},
+      "personal_branding": {"name": "Personal Branding", "target_level": 2}
+    },
+    "role_digital_marketing_specialist": {
+      "marketing_fundamentals": {"name": "Marketing Fundamentals", "target_level": 3},
+      "content_marketing": {"name": "Content Marketing", "target_level": 3},
+      "seo_fundamentals": {"name": "SEO", "target_level": 3},
+      "social_media_marketing": {"name": "Social Media", "target_level": 3},
+      "marketing_analytics": {"name": "Analytics", "target_level": 2},
+      "digital_advertising": {"name": "Advertising", "target_level": 2}
+    },
+    "role_seo_specialist": {
+      "keyword_research": {"name": "Keyword Research", "target_level": 3},
+      "on_page_seo": {"name": "On-Page SEO Optimization", "target_level": 3},
+      "technical_seo": {"name": "Technical SEO & Site Architecture", "target_level": 3},
+      "link_building": {"name": "Link Building Strategies", "target_level": 2},
+      "google_analytics_gsc": {"name": "Google Analytics & Search Console", "target_level": 2},
+      "seo_content_strategy": {"name": "Content Strategy", "target_level": 2}
+    },
+    "role_social_media_manager": {
+      "social_strategy": {"name": "Social Media Strategy", "target_level": 3},
+      "community_management": {"name": "Community Management", "target_level": 3},
+      "copywriting_content": {"name": "Copywriting & Content Creation", "target_level": 3},
+      "paid_social": {"name": "Paid Social Campaigns", "target_level": 2},
+      "influencer_marketing": {"name": "Influencer Marketing", "target_level": 2},
+      "social_reporting": {"name": "Social Analytics & Reporting", "target_level": 2}
+    },
+    "role_brand_manager": {
+      "brand_strategy": {"name": "Brand Strategy & Positioning", "target_level": 3},
+      "competitor_analysis": {"name": "Market & Competitor Analysis", "target_level": 3},
+      "creative_direction": {"name": "Creative Direction", "target_level": 2},
+      "campaign_management": {"name": "Multi-Channel Campaign Management", "target_level": 3},
+      "consumer_psychology": {"name": "Consumer Psychology", "target_level": 2},
+      "brand_equity": {"name": "Brand Equity Measurement", "target_level": 2}
+    },
+    "role_healthcare_data_analyst": {
+      "ehr_systems": {"name": "Health Informatics & EHR Systems", "target_level": 3},
+      "healthcare_sql": {"name": "Healthcare Analytics & SQL", "target_level": 3},
+      "biostatistics": {"name": "Biostatistics & Epidemiology", "target_level": 3},
+      "hipaa_privacy": {"name": "HIPAA & Patient Privacy", "target_level": 2},
+      "clinical_quality": {"name": "Clinical Quality Measures", "target_level": 2},
+      "health_visualization": {"name": "Health Data Visualization", "target_level": 2}
+    },
+    "role_health_informatics_specialist": {
+      "health_info_systems": {"name": "Health Information Systems", "target_level": 3},
+      "clinical_terminologies": {"name": "Clinical Terminologies (ICD-10, SNOMED)", "target_level": 3},
+      "data_governance": {"name": "Data Governance & Security", "target_level": 2},
+      "hl7_fhir": {"name": "HL7 & FHIR Standards", "target_level": 3},
+      "workflow_optimization": {"name": "Workflow Optimization", "target_level": 2},
+      "ehr_implementation": {"name": "EHR Implementation", "target_level": 2}
+    },
+    "role_clinical_research_associate": {
+      "good_clinical_practice": {"name": "Good Clinical Practice (GCP)", "target_level": 3},
+      "clinical_protocols": {"name": "Clinical Trial Protocols", "target_level": 3},
+      "regulatory_submissions": {"name": "Regulatory Submissions (FDA / IRB)", "target_level": 3},
+      "adverse_events": {"name": "Adverse Event Monitoring", "target_level": 2},
+      "informed_consent": {"name": "Patient Informed Consent", "target_level": 2},
+      "clinical_data_mgmt": {"name": "Clinical Data Management", "target_level": 2}
+    },
+    "role_healthcare_administrator": {
+      "healthcare_operations": {"name": "Healthcare Operations Management", "target_level": 3},
+      "hospital_finance": {"name": "Hospital Financial Management", "target_level": 3},
+      "health_law_ethics": {"name": "Healthcare Law & Ethics", "target_level": 2},
+      "health_quality_improvement": {"name": "Healthcare Quality Improvement", "target_level": 3},
+      "public_health_policy": {"name": "Public Health Policy", "target_level": 2},
+      "healthcare_leadership": {"name": "Healthcare Leadership", "target_level": 2}
     }
-  },
-  "skills": [
-    { "id": "math_probability", "name": "Probability Theory", "domain": "Mathematics" },
-    { "id": "math_linear_algebra", "name": "Linear Algebra", "domain": "Mathematics" },
-    { "id": "python_basics", "name": "Python Basics", "domain": "Programming" },
-    { "id": "python_pandas", "name": "Pandas Data Manipulation", "domain": "Data Science" },
-    { "id": "ml_basics", "name": "Machine Learning Fundamentals", "domain": "AI/ML" },
-    { "id": "dl_neural_networks", "name": "Deep Learning & Neural Nets", "domain": "AI/ML" },
-    { "id": "sql_basics", "name": "SQL Fundamentals", "domain": "Data" },
-    { "id": "sql_advanced", "name": "Advanced SQL & Aggregations", "domain": "Data" },
-    { "id": "html_css", "name": "HTML & CSS", "domain": "Web Dev" },
-    { "id": "js_basics", "name": "JavaScript Fundamentals", "domain": "Web Dev" },
-    { "id": "react_basics", "name": "React.js", "domain": "Web Dev" },
-    { "id": "node_basics", "name": "Node.js Basics", "domain": "Web Dev" },
-    { "id": "cloud_fundamentals", "name": "Cloud Fundamentals", "domain": "Cloud" },
-    { "id": "aws_architecture", "name": "AWS Architecture", "domain": "Cloud" },
-    { "id": "docker_k8s", "name": "Docker and Kubernetes", "domain": "Cloud" }
-  ]
+  }
 }

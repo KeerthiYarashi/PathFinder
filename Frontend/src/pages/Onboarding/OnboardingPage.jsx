@@ -60,14 +60,14 @@ function OnboardingPage() {
 
     // Save corresponding step value
     if (currentStep === 0) setName(userResponseText)
-    if (currentStep === 1 && valueToSave) setRole(valueToSave)
+    if (currentStep === 1) setRole(valueToSave || userResponseText)
     if (currentStep === 2 && valueToSave) setTimeBudget(valueToSave)
     if (currentStep === 3 && valueToSave) setFormat(valueToSave)
     if (currentStep === 4 && valueToSave) setDifficulty(valueToSave)
 
     // Trigger typing state
     setIsTyping(true)
-    await new Promise(r => setTimeout(r, 1000))
+    await new Promise(r => setTimeout(r, 800))
     setIsTyping(false)
 
     const nextStep = currentStep + 1
@@ -75,15 +75,15 @@ function OnboardingPage() {
 
     let aiText = ''
     if (nextStep === 1) {
-      aiText = `Nice to meet you, ${userResponseText}! What is your target career role or skill goal? (e.g. Data Analyst, Software Engineer)`
+      aiText = `Nice to meet you, ${userResponseText}! What is your target career role or profession? (e.g. Doctor, Cybersecurity Specialist, Product Manager, Software Engineer)`
     } else if (nextStep === 2) {
       aiText = `Got it. How many hours can you dedicate to learning each week? Use the slider tool below to set your weekly budget.`
     } else if (nextStep === 3) {
       aiText = `Excellent. What is your preferred content format? (Videos, written articles, coding projects, or a mix of all formats)`
     } else if (nextStep === 4) {
-      aiText = `Understood. Finally, what is your tolerance level for difficult math and technical coding concepts? (Low, Normal, or High)`
+      aiText = `Understood. Finally, what is your tolerance level for technical difficulty? (Low, Normal, or High)`
     } else if (nextStep === 5) {
-      aiText = `Creating your profile now. Hang tight while we generate your customized skill-gap analysis...`
+      aiText = `Creating your profile now. Hang tight while we generate your customized skill-gap analysis and roadmap...`
     }
 
     setMessages(prev => [...prev, { id: Date.now() + 1, sender: 'ai', text: aiText }])
@@ -91,8 +91,9 @@ function OnboardingPage() {
     // If final step, create profile and navigate
     if (nextStep === 5) {
       setIsTyping(true)
-      const finalName = name || userResponseText
-      const finalId = await createProfile(finalName, timeBudget, format, difficulty)
+      const finalName = name || "Learner"
+      const finalRole = role || (currentStep === 1 ? (valueToSave || userResponseText) : "Doctor")
+      const finalId = await createProfile(finalName, timeBudget, format, difficulty, finalRole)
       setIsTyping(false)
       if (finalId) {
         navigate('/skills')
@@ -295,11 +296,11 @@ function OnboardingPage() {
                 {currentStep === 1 && (
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {['Software Engineer', 'Data Analyst', 'Data Scientist'].map((r) => (
+                      {['AI Engineer', 'Product Manager', 'Financial Analyst', 'UI/UX Designer', 'Digital Marketing Specialist', 'Healthcare Data Analyst'].map((r) => (
                         <button
                           key={r}
                           onClick={() => handleChatNextStep(r, r)}
-                          className="rounded-lg border border-indigo-500/20 bg-indigo-600/5 px-4 py-2 text-xs font-bold text-indigo-400 hover:bg-indigo-600/20 hover:text-indigo-300 transition-all"
+                          className="rounded-lg border border-indigo-500/20 bg-indigo-600/5 px-3.5 py-1.5 text-xs font-bold text-indigo-400 hover:bg-indigo-600/20 hover:text-indigo-300 transition-all"
                         >
                           {r}
                         </button>

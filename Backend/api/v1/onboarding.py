@@ -58,44 +58,49 @@ class ConfirmProfileRequest(BaseModel):
     
 def shared_learning_pipeline(profile: ExtractedProfile, learner_id: str = "preview_user"):
     # 1. Deterministic Skill Gap Engine
-    # Map SkillProficiency list back to dict for calculation
     current_skills_dict = {s.skill: 3 if s.proficiency == "Advanced" else (2 if s.proficiency == "Intermediate" else 1) for s in profile.current_skills}
     
     gaps = calculate_skill_gaps(
-        target_role=profile.target_role or "Unknown Role",
+        target_role=profile.target_role or "Career Professional",
         current_skills=current_skills_dict,
-        jd_required_skills={s: 3 for s in profile.required_skills} # Assume requested skills require high proficiency
+        jd_required_skills={s: 3 for s in profile.required_skills} if profile.required_skills else None
     )
     
-    # 2. Query Generation
-    llm_service = LLMService()
-    missing_skill_names = [gap.skill_name for gap in gaps]
-    queries = llm_service.generate_search_queries(missing_skill_names, profile.target_role)
-    
-    # 3. Live Resource Acquisition (Using LangChain Tools genuinely)
-    all_raw_resources = []
-    for skill_name, query in queries.items():
-        # Invoke tools directly as part of the pipeline
-        coursera_res = search_coursera.invoke({"query": query})
-        youtube_res = search_youtube.invoke({"query": query})
-        all_raw_resources.extend(coursera_res)
-        all_raw_resources.extend(youtube_res)
+    vector_store = None
+    try:
+        # 2. Query Generation
+        llm_service = LLMService()
+        missing_skill_names = [gap.skill_name for gap in gaps]
+        queries = llm_service.generate_search_queries(missing_skill_names, profile.target_role or "Professional")
         
-    # Re-hydrate into Pydantic models for the cache step
-    new_resources = [NormalizedResource(**r) for r in all_raw_resources]
-    
+        # 3. Live Resource Acquisition
+        all_raw_resources = []
+        for skill_name, query in queries.items():
+            try:
+                coursera_res = search_coursera.invoke({"query": query})
+                youtube_res = search_youtube.invoke({"query": query})
+                all_raw_resources.extend(coursera_res)
+                all_raw_resources.extend(youtube_res)
+            except Exception:
+                pass
+            
+        if all_raw_resources:
+            new_resources = [NormalizedResource(**r) for r in all_raw_resources]
+            temp_store = VectorStoreService()
+            orchestrator = ResourceAcquisitionOrchestrator(temp_store)
+            orchestrator.cache_resources(new_resources)
+    except Exception as e:
+        print(f"Warning: Resource acquisition pipeline warning (falling back to generated curriculum): {e}")
+        
+    # 4. Recommendation + DAG Path Gen
     vector_store = VectorStoreService()
-    orchestrator = ResourceAcquisitionOrchestrator(vector_store)
-    orchestrator.cache_resources(new_resources)
-    
-    # 4. Final RAG + Recommendation + DAG Path Gen
     recommendation_engine = RecommendationEngine(vector_store)
     timeline = generate_timeline(
         learner_id=learner_id,
-        target_role=profile.target_role,
+        target_role=profile.target_role or "Career Professional",
         skill_gaps=gaps,
-        time_budget=profile.learning_preferences.weekly_hours,
-        difficulty=profile.learning_preferences.difficulty,
+        time_budget=profile.learning_preferences.weekly_hours if profile.learning_preferences else 10,
+        difficulty=profile.learning_preferences.difficulty if profile.learning_preferences else "normal",
         recommendation_engine=recommendation_engine,
         learner_mastery=current_skills_dict
     )
@@ -199,28 +204,34 @@ async def upload_resume_jd(
 @router.post("/confirm", response_model=UploadPreviewResponse)
 def confirm_profile(request: ConfirmProfileRequest, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     # Persist the confirmed profile
-    learner_data = {
-        "id": current_user.id,
-        "name": request.profile.full_name or request.name,
-        "time_budget_hours": request.profile.learning_preferences.weekly_hours,
-        "difficulty_tolerance": request.profile.learning_preferences.difficulty
-    }
-    db.table("learners").upsert(learner_data).execute()
-    
-    if request.profile.target_role:
-        db.table("learning_goals").upsert({
-            "learner_id": current_user.id,
-            "target_role_id": request.profile.target_role
-        }).execute()
-    
-    for skill_prof in request.profile.current_skills:
-        level_map = {"Advanced": 3, "Intermediate": 2, "Beginner": 1, "Unknown": 0}
-        db.table("learner_skills").upsert({
-            "learner_id": current_user.id,
-            "skill_id": skill_prof.skill,
-            "mastery_level": level_map.get(skill_prof.proficiency, 0)
-        }).execute()
+    try:
+        user_id = getattr(current_user, 'id', 'demo-user')
+        learner_data = {
+            "id": user_id,
+            "name": request.profile.full_name or request.name,
+            "time_budget_hours": request.profile.learning_preferences.weekly_hours if request.profile.learning_preferences else 10,
+            "difficulty_tolerance": request.profile.learning_preferences.difficulty if request.profile.learning_preferences else "normal"
+        }
+        if db:
+            db.table("learners").upsert(learner_data).execute()
+            
+            if request.profile.target_role:
+                db.table("learning_goals").upsert({
+                    "learner_id": user_id,
+                    "target_role_id": request.profile.target_role
+                }).execute()
+            
+            for skill_prof in request.profile.current_skills:
+                level_map = {"Advanced": 3, "Intermediate": 2, "Beginner": 1, "Unknown": 0}
+                db.table("learner_skills").upsert({
+                    "learner_id": user_id,
+                    "skill_id": skill_prof.skill,
+                    "mastery_level": level_map.get(skill_prof.proficiency, 0)
+                }).execute()
+    except Exception as e:
+        print(f"Warning: Could not persist to DB (proceeding in memory/demo mode): {e}")
         
-    # Execute the RAG-Twice pipeline using the CONFIRMED profile
-    preview = shared_learning_pipeline(request.profile, current_user.id)
+    # Execute the learning pipeline using the CONFIRMED profile
+    user_id = getattr(current_user, 'id', 'preview_user')
+    preview = shared_learning_pipeline(request.profile, user_id)
     return UploadPreviewResponse(**preview)

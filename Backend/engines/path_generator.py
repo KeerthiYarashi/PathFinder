@@ -92,11 +92,16 @@ def generate_timeline(
     for gap in sorted_gaps:
         from schemas.timeline import Resource
         
-        recommended = recommendation_engine.get_best_resource_for_gap(
-            gap=gap,
-            learner_profile=learner_profile,
-            learner_mastery=learner_mastery
-        )
+        recommended = None
+        if recommendation_engine:
+            try:
+                recommended = recommendation_engine.get_best_resource_for_gap(
+                    gap=gap,
+                    learner_profile=learner_profile,
+                    learner_mastery=learner_mastery
+                )
+            except Exception:
+                recommended = None
         
         if recommended:
             best_resource = Resource(

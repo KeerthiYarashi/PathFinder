@@ -1,6 +1,6 @@
 import pytest
 from unittest.mock import patch, MagicMock
-from schemas.learner import ExtractedProfile
+from schemas.learner import ExtractedProfile, SkillProficiency, LearningPreferences
 from schemas.path import SkillGap
 from services.resource_acquisition.base import NormalizedResource
 from api.v1.onboarding import shared_learning_pipeline
@@ -79,10 +79,12 @@ def test_full_pipeline_success(mock_llm_service, mock_langchain_tools, mock_vect
     """
     profile = ExtractedProfile(
         target_role="role_ml_engineer",
-        current_skills={"Python": 2},
+        current_skills=[SkillProficiency(skill="Python", proficiency="Advanced", evidence="2 years experience")],
         required_skills=["Python", "FastAPI", "Deep Learning"],
-        time_budget_hours=5.0,
-        difficulty_tolerance="normal"
+        learning_preferences=LearningPreferences(
+            weekly_hours=5.0,
+            difficulty="normal"
+        )
     )
     
     # 1. Run pipeline
@@ -127,10 +129,12 @@ def test_live_api_failure_fallback(mock_llm_service, mock_vector_store):
         
         profile = ExtractedProfile(
             target_role="role_ml_engineer",
-            current_skills={},
+            current_skills=[],
             required_skills=["FastAPI"],
-            time_budget_hours=5.0,
-            difficulty_tolerance="normal"
+            learning_preferences=LearningPreferences(
+                weekly_hours=5.0,
+                difficulty="normal"
+            )
         )
         
         # The pipeline should not crash

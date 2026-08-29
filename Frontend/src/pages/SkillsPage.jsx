@@ -84,6 +84,9 @@ function SkillsPage() {
     }
   }
 
+  const theme = useLearnerStore((state) => state.theme)
+  const isDark = theme === 'dark'
+
   return (
     <div className="space-y-8">
       {/* Header section */}
@@ -136,15 +139,15 @@ function SkillsPage() {
             <div className="w-full flex justify-center py-4 overflow-visible">
               <ResponsiveContainer width="100%" height={320}>
                 <RadarChart cx="50%" cy="50%" outerRadius="75%" data={chartData}>
-                  <PolarGrid stroke="#1e293b" />
+                  <PolarGrid stroke={isDark ? '#1e293b' : '#cbd5e1'} />
                   <PolarAngleAxis 
                     dataKey="subject" 
-                    tick={{ fill: '#94a3b8', fontSize: 10, fontWeight: 500 }} 
+                    tick={{ fill: isDark ? '#94a3b8' : '#1e293b', fontSize: 11, fontWeight: 600 }} 
                   />
                   <PolarRadiusAxis 
                     angle={30} 
                     domain={[0, 3]} 
-                    tick={{ fill: '#475569', fontSize: 8 }} 
+                    tick={{ fill: isDark ? '#475569' : '#64748b', fontSize: 9 }} 
                     axisLine={false} 
                   />
                   
@@ -152,9 +155,9 @@ function SkillsPage() {
                   <Radar 
                     name="Your Current Level" 
                     dataKey="Current Level" 
-                    stroke="#818cf8" 
+                    stroke="#6366f1" 
                     fill="#6366f1" 
-                    fillOpacity={0.25} 
+                    fillOpacity={0.35} 
                   />
                   
                   {/* Target level Radar (Emerald Accent) */}
@@ -163,16 +166,17 @@ function SkillsPage() {
                     dataKey="Required Level" 
                     stroke="#10b981" 
                     fill="#10b981" 
-                    fillOpacity={0.06} 
+                    fillOpacity={0.15} 
                   />
                   
                   <Tooltip 
                     contentStyle={{ 
-                      backgroundColor: '#0f172a', 
-                      borderColor: '#1e293b', 
-                      borderRadius: '8px', 
-                      color: '#f8fafc',
-                      fontSize: '11px' 
+                      backgroundColor: isDark ? '#0f172a' : '#ffffff', 
+                      borderColor: isDark ? '#1e293b' : '#e2e8f0', 
+                      borderRadius: '12px', 
+                      color: isDark ? '#f8fafc' : '#0f172a',
+                      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)',
+                      fontSize: '11px'
                     }} 
                   />
                   <Legend 
@@ -265,10 +269,8 @@ function SkillsPage() {
             skillId={activeQuiz.id}
             skillName={activeQuiz.name}
             onClose={() => setActiveQuiz(null)}
-            onComplete={(isPassed) => {
-              if (isPassed) {
-                updateSkillLevel(activeQuiz.id)
-              }
+            onComplete={(scorePct) => {
+              updateSkillLevel(activeQuiz.id, scorePct)
               setActiveQuiz(null)
             }}
           />

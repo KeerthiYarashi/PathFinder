@@ -71,4 +71,4 @@ class NBAEngine:
         for mod in modules:
             if mod.get("status", "pending") != "completed":
                 return mod
-        return None if not modules else modules[0]
+        return None

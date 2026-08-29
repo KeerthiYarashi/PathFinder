@@ -21,11 +21,19 @@ function AppLayout({ children }) {
         ? 'bg-slate-950 text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200' 
         : 'bg-slate-50 text-slate-900 selection:bg-indigo-500/10 selection:text-indigo-800'
     }`}>
-      {/* Decorative ambient background glows - only in dark mode for premium look */}
-      {isDark && (
+      {/* Decorative ambient background glows */}
+      {isDark ? (
         <>
-          <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-900/10 blur-[100px] pointer-events-none" />
-          <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-emerald-900/5 blur-[100px] pointer-events-none" />
+          <div className="absolute top-[-10%] left-[-10%] h-[500px] w-[500px] rounded-full bg-indigo-900/15 blur-[120px] pointer-events-none" />
+          <div className="absolute bottom-[-10%] right-[-10%] h-[500px] w-[500px] rounded-full bg-emerald-900/10 blur-[120px] pointer-events-none" />
+          <div className="absolute top-[40%] right-[-5%] h-[400px] w-[400px] rounded-full bg-violet-900/10 blur-[120px] pointer-events-none" />
+        </>
+      ) : (
+        <>
+          <div className="absolute top-[-8%] left-[-5%] h-[550px] w-[550px] rounded-full bg-indigo-300/25 blur-[130px] pointer-events-none" />
+          <div className="absolute bottom-[-5%] right-[-5%] h-[550px] w-[550px] rounded-full bg-emerald-300/20 blur-[130px] pointer-events-none" />
+          <div className="absolute top-[35%] right-[10%] h-[450px] w-[450px] rounded-full bg-purple-200/35 blur-[120px] pointer-events-none" />
+          <div className="absolute top-[60%] left-[5%] h-[400px] w-[400px] rounded-full bg-amber-200/25 blur-[110px] pointer-events-none" />
         </>
       )}
 

@@ -18,10 +18,24 @@ def analyze_learner_gaps(learner_id: str, db: Client) -> GapAnalysisResponse:
     Decoupled from FastAPI so AI Agents can use this directly.
     """
     # 1. Fetch Learner's Target Role
-    role_response = db.table("learning_goals").select("target_role_id").eq("learner_id", learner_id).execute()
-    target_role = "role_ml_engineer"
-    if role_response.data and len(role_response.data) > 0:
-        target_role = role_response.data[0].get("target_role_id", "role_ml_engineer")
+    target_role = ""
+    try:
+        role_response = db.table("learning_goals").select("target_role_id").eq("learner_id", learner_id).execute()
+        if role_response.data and len(role_response.data) > 0:
+            target_role = role_response.data[0].get("target_role_id", "")
+    except Exception:
+        pass
+        
+    if not target_role:
+        try:
+            learner_res = db.table("learners").select("target_role").eq("id", learner_id).execute()
+            if learner_res.data and len(learner_res.data) > 0:
+                target_role = learner_res.data[0].get("target_role", "")
+        except Exception:
+            pass
+
+    if not target_role:
+        target_role = "Career Professional"
 
     # 2. Fetch Learner's Current Skills
     skills_response = db.table("learner_skills").select("skill_id, mastery_level").eq("learner_id", learner_id).execute()

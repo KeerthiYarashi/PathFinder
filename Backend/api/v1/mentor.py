@@ -23,8 +23,8 @@ def talk_to_mentor(request: MentorChatRequest, db: Client = Depends(get_supabase
     learner_data = learner_response.data[0] if learner_response.data else {}
     
     role_res = db.table("learning_goals").select("target_role_id").eq("learner_id", request.learner_id).execute()
-    if role_res.data:
-        learner_data["target_role"] = role_res.data[0]["target_role_id"]
+    if role_res.data and isinstance(role_res.data, list) and len(role_res.data) > 0 and isinstance(role_res.data[0], dict):
+        learner_data["target_role"] = role_res.data[0].get("target_role_id", "")
         
     # --- FAST PATH: Apify Coursera Scraper Fallback ---
     # To save LLM tokens, check if the user is asking for courses.

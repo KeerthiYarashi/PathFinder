@@ -20,6 +20,7 @@ class LearnerBase(BaseModel):
     time_budget_hours: float = Field(..., gt=0, description="Hours per week the learner can dedicate")
     preferred_format: PreferredFormat = Field(default=PreferredFormat.video)
     difficulty_tolerance: DifficultyTolerance = Field(default=DifficultyTolerance.normal)
+    target_role: Optional[str] = Field(default=None, description="The learner's target career role")
 
 class LearnerCreate(LearnerBase):
     pass
