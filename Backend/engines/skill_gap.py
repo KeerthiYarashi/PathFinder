@@ -14,19 +14,27 @@ def get_role_requirements() -> Dict[str, Dict]:
         print(f"Warning: Could not load skills.json: {e}")
         return {}
 
-def calculate_skill_gaps(target_role: str, current_skills: Dict[str, int]) -> List[SkillGap]:
+def calculate_skill_gaps(target_role: str, current_skills: Dict[str, int], jd_required_skills: Dict[str, int] = None) -> List[SkillGap]:
     """
     Deterministic algorithm to compare what a learner has vs what a role requires.
     
     current_skills: Dictionary mapping skill_id to mastery_level (0 to 3)
+    jd_required_skills: Optional dictionary mapping skill_name to target_level (0 to 3) extracted from a JD.
     """
-    role_requirements = get_role_requirements()
-    
-    if target_role not in role_requirements:
-        # Default to a generic requirement if role is unknown
-        required_skills = role_requirements.get("role_data_analyst", {})
+    if jd_required_skills:
+        # Construct the required_skills dictionary using the JD
+        required_skills = {}
+        for skill, level in jd_required_skills.items():
+            skill_id = skill.lower().replace(" ", "_")
+            required_skills[skill_id] = {"name": skill, "target_level": level}
     else:
-        required_skills = role_requirements[target_role]
+        role_requirements = get_role_requirements()
+        
+        if target_role not in role_requirements:
+            # Default to a generic requirement if role is unknown
+            required_skills = role_requirements.get("role_data_analyst", {})
+        else:
+            required_skills = role_requirements[target_role]
 
     gaps = []
 

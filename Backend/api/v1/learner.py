@@ -2,12 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from supabase import Client
 from typing import Any
 from db.database import get_supabase
+from core.security import verify_supabase_jwt
 from schemas.learner import LearnerCreate, LearnerResponse
 
 router = APIRouter()
 
 @router.post("/", response_model=LearnerResponse, status_code=status.HTTP_201_CREATED)
-def create_learner(learner_in: LearnerCreate, db: Client = Depends(get_supabase)) -> Any:
+def create_learner(learner_in: LearnerCreate, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)) -> Any:
     """
     Create a new learner profile.
     """
@@ -27,7 +28,7 @@ def create_learner(learner_in: LearnerCreate, db: Client = Depends(get_supabase)
     return response.data[0]
 
 @router.get("/{learner_id}", response_model=LearnerResponse)
-def get_learner(learner_id: str, db: Client = Depends(get_supabase)) -> Any:
+def get_learner(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)) -> Any:
     """
     Fetch a learner profile by ID.
     """

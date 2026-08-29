@@ -5,11 +5,12 @@ from db.database import get_supabase
 from schemas.path import GapAnalysisResponse
 from schemas.timeline import LearningTimeline
 from services.data_access import analyze_learner_gaps, generate_learner_timeline, get_learner_profile
+from core.security import verify_supabase_jwt
 
 router = APIRouter()
 
 @router.get("/gaps/{learner_id}", response_model=GapAnalysisResponse)
-def get_learner_gaps(learner_id: str, db: Client = Depends(get_supabase)):
+def get_learner_gaps(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     """
     Analyzes a learner's current skills against their target role
     and returns a prioritized list of missing skills.
@@ -17,7 +18,7 @@ def get_learner_gaps(learner_id: str, db: Client = Depends(get_supabase)):
     return analyze_learner_gaps(learner_id, db)
 
 @router.get("/recommendations/{learner_id}")
-def get_learner_recommendations(learner_id: str, db: Client = Depends(get_supabase)):
+def get_learner_recommendations(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     """
     Finds the learner's biggest skill gap, searches for resources using pgvector,
     and scores them based on the learner's preferences.
@@ -70,7 +71,7 @@ def get_learner_recommendations(learner_id: str, db: Client = Depends(get_supaba
     }
 
 @router.get("/generate/{learner_id}", response_model=LearningTimeline)
-def generate_learner_path(learner_id: str, db: Client = Depends(get_supabase)):
+def generate_learner_path(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     """
     The capstone endpoint: Generates a fully sequenced learning timeline.
     """
@@ -85,7 +86,7 @@ from schemas.nba import NextBestAction
 from engines.nba import NBAEngine
 
 @router.get("/nba/{learner_id}", response_model=NextBestAction)
-def get_nba(learner_id: str, db: Client = Depends(get_supabase)):
+def get_nba(learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     # Fetch learner's path
     path_response = db.table("learning_paths").select("path_data").eq("learner_id", learner_id).execute()
     

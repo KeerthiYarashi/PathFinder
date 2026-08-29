@@ -1,12 +1,13 @@
 import { useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { useLearnerStore } from '../../store/learnerStore'
-import { Menu, X, Compass, LayoutDashboard, Target, Settings } from 'lucide-react'
+import { Menu, X, Compass, LayoutDashboard, Target, Settings, LogOut } from 'lucide-react'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const location = useLocation()
   const theme = useLearnerStore((state) => state.theme)
+  const signOut = useLearnerStore((state) => state.signOut)
   const isDark = theme === 'dark'
 
   const navLinks = [
@@ -64,6 +65,18 @@ function Navbar() {
               </Link>
             )
           })}
+          
+          <button
+            onClick={() => signOut()}
+            className={`flex items-center gap-2 text-sm font-medium transition-all duration-200 ${
+              isDark 
+                ? 'text-slate-300 hover:text-red-400' 
+                : 'text-slate-600 hover:text-red-600'
+            }`}
+          >
+            <LogOut className={`h-4 w-4 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+            Logout
+          </button>
         </div>
 
         {/* Mobile menu button */}
@@ -113,6 +126,21 @@ function Navbar() {
                 </Link>
               )
             })}
+            
+            <button
+              onClick={() => {
+                setIsOpen(false)
+                signOut()
+              }}
+              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-all ${
+                isDark 
+                  ? 'text-slate-300 hover:bg-red-500/10 hover:text-red-400' 
+                  : 'text-slate-600 hover:bg-red-50 hover:text-red-600'
+              }`}
+            >
+              <LogOut className={`h-5 w-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+              Logout
+            </button>
           </div>
         </div>
       )}

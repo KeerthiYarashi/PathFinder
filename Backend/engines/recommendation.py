@@ -46,23 +46,7 @@ class RecommendationEngine:
                 best_scoring_breakdown = breakdown
                 
         if not best_candidate:
-            # FAST-PATH FALLBACK: Vector DB is empty, use Apify Scraper to save LLM tokens/hallucinations
-            from services.coursera_scraper import CourseraScraperService
-            scraper = CourseraScraperService()
-            scraped_courses = scraper.search_courses(gap.skill_name)
-            
-            if scraped_courses:
-                best_candidate = scraped_courses[0]
-                best_scoring_breakdown = self._score_candidate(
-                    candidate=best_candidate,
-                    similarity_score=0.9, # assume high relevance from scraper
-                    gap=gap,
-                    learner=learner_profile,
-                    mastery=learner_mastery,
-                    rewards=reward_history
-                )[1]
-            else:
-                return None
+            return None
             
         explanation = self._generate_explanation_summary(best_scoring_breakdown)
         

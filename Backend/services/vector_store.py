@@ -1,12 +1,18 @@
 from core.config import settings
-from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_postgres import PGVector
+import torch
 
 class VectorStoreService:
     def __init__(self):
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model=settings.EMBEDDING_MODEL,
-            google_api_key=settings.GEMINI_API_KEY
+        # Auto-detect CUDA for GPU acceleration on user's RTX 3050
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        print(f"Initializing HuggingFaceEmbeddings on device: {device}")
+        
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="all-MiniLM-L6-v2",
+            model_kwargs={'device': device},
+            encode_kwargs={'normalize_embeddings': True}
         )
         self.collection_name = settings.VECTOR_COLLECTION
         self.connection = settings.SUPABASE_DB_URL
@@ -28,7 +34,14 @@ class VectorStoreService:
         query = f"Resources for {skill_name}. {skill_description}"
         
         try:
-            results = store.similarity_search(query, k=k, filter=filters)
+            # 6. CRITICAL ARCHITECTURE: Using LangChain Retriever explicitly
+            search_kwargs = {"k": k}
+            if filters:
+                search_kwargs["filter"] = filters
+                
+            retriever = store.as_retriever(search_kwargs=search_kwargs)
+            results = retriever.invoke(query)
+            
             return [doc.metadata for doc in results]
         except Exception as e:
             print(f"Vector search failed: {e}")
@@ -40,10 +53,31 @@ class VectorStoreService:
             
         store = self.get_store()
         try:
-            results = store.similarity_search("", k=1, filter={"resource_id": resource_id})
+            retriever = store.as_retriever(search_kwargs={"k": 1, "filter": {"resource_id": resource_id}})
+            results = retriever.invoke("")
             if results:
                 return results[0].metadata
             return None
         except Exception as e:
             print(f"Vector search failed: {e}")
             return None
+
+    def add_resources(self, resources: list[dict]):
+        if not self.connection:
+            print("Warning: SUPABASE_DB_URL not set. Skipping vector ingestion.")
+            return
+            
+        store = self.get_store()
+        from langchain_core.documents import Document
+        
+        docs = []
+        for r in resources:
+            text = f"{r.get('title', '')} {r.get('description', '')} {r.get('provider', '')}"
+            docs.append(Document(page_content=text, metadata=r))
+            
+        try:
+            store.add_documents(docs)
+            print(f"Successfully added {len(docs)} resources to pgvector.")
+        except Exception as e:
+            print(f"Vector ingestion failed: {e}")
+

@@ -516,7 +516,7 @@ Projects are inserted into the path after every major skill cluster (milestone).
 | **Responsive Behavior** | • *Mobile (<768px):* Dialog takes 92% of viewport; tapping anywhere on screen clears overlay immediately. |
 | **Accessibility Considerations** | `role="status"` with `aria-live="assertive"`; screen reader speech script: *"Learning route recalculated. Probability and Distributions Refresher module has been added before Statistics Foundations. Target completion adjusted by one week."*; `prefers-reduced-motion` disables ripple animations and node movement, displaying static checkmark with diff list directly. |
 | **Data Displayed** | Animated GPS graphic, route recalculation status, itemized diff changelog (added/removed/shifted modules), updated completion date, and new Next Best Action. |
-| **API/Backend Dependency** | Triggered by `POST /api/module/{id}/action` (struggle/skip), `POST /api/assessment/{id}/submit` (score <50%), or `POST /api/path/recalculate/{learner_id}` → returns updated path JSON + diff list. |
+| **API/Backend Dependency** | Triggered by `POST /api/v1/modules/action` (struggle/skip), `POST /api/assessment/{id}/submit` (score <50%). |
 
 ---
 
@@ -763,7 +763,7 @@ Learning Path Generation
 | POST | `/api/assessment/{module_id}/submit` | Submit answers, get score | Assessment Quiz |
 | GET | `/api/dashboard/{learner_id}` | Get all dashboard data | Dashboard |
 | POST | `/api/mentor/chat` | Send mentor message, get response | AI Mentor Chat |
-| POST | `/api/path/recalculate/{learner_id}` | Force path recalculation | Adaptive flow |
+| POST | `/api/v1/modules/action` | Flag module as struggling to trigger adaptation | Adaptive flow |
 
 ---
 

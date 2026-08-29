@@ -17,11 +17,14 @@ class Settings(BaseSettings):
     GEMINI_API_KEY: str = ""
     OPENAI_API_KEY: str = ""
     LLM_PROVIDER: str = "gemini" # "gemini" | "openai"
-    EMBEDDING_MODEL: str = "models/text-embedding-004"
-    VECTOR_COLLECTION: str = "learning_resources"
+    EMBEDDING_MODEL: str = "models/gemini-embedding-2"
+    VECTOR_COLLECTION: str = "learning_resources_hf"
 
-    # Apify
+    # Apify & External APIs
     APIFY_API_TOKEN: str = ""
+    APIFY_COURSE_ACTOR_ID: str = ""
+    APIFY_SEARCH_ACTOR_ID: str = ""
+    YOUTUBE_API_KEY: str = ""
 
     model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
 

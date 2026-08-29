@@ -1,14 +1,16 @@
 from fastapi import APIRouter, Depends, HTTPException
+# pyrefly: ignore [missing-import]
 from supabase import Client
 from db.database import get_supabase
 from schemas.progress import ModuleAction, ActionResponse, ActionType
 from engines.adaptive import handle_struggling_action, handle_complete_action
+from core.security import verify_supabase_jwt
 from services.llm import LLMService
 
 router = APIRouter()
 
 @router.post("/action", response_model=ActionResponse)
-def log_module_action(action: ModuleAction, db: Client = Depends(get_supabase)):
+def log_module_action(action: ModuleAction, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     """
     Logs a user action (complete, struggling) and triggers the adaptive engine.
     Returns whether the frontend needs to re-fetch the `/paths/generate` endpoint.
@@ -41,7 +43,7 @@ def log_module_action(action: ModuleAction, db: Client = Depends(get_supabase)):
         raise HTTPException(status_code=500, detail=f"Failed to process action: {str(e)}")
 
 @router.get("/{module_id}/explanation")
-def get_explanation(module_id: str, learner_id: str, db: Client = Depends(get_supabase)):
+def get_explanation(module_id: str, learner_id: str, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     # 1. Fetch learner's path
     path_response = db.table("learning_paths").select("path_data").eq("learner_id", learner_id).execute()
     

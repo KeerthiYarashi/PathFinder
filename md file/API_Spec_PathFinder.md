@@ -51,7 +51,7 @@ Managed via Pydantic `BaseSettings`.
 ### 1.3 CORS, Versioning, and Authentication
 *   **CORS:** Enabled in `main.py` using `CORSMiddleware`, restricting to frontend domains.
 *   **Versioning:** All endpoints are prefixed with `/api/v1/`.
-*   **Authentication:** Supabase Auth is integrated. Endpoints require a valid Supabase JWT verified via a FastAPI dependency (`Depends(verify_supabase_jwt)`).
+*   **Authentication:** Supabase Auth is integrated. Endpoints require a valid Supabase JWT Bearer token verified via a FastAPI dependency (`Depends(verify_supabase_jwt)`).
 
 ### 1.4 Error Handling
 Custom global exception handlers in `main.py` return consistent JSON errors.
@@ -121,7 +121,7 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
 
 ### 2.5 Skill-Gap Analysis
 *   **Method:** `GET`
-*   **URL:** `/path/{learner_id}/skill-gap`
+*   **URL:** `/paths/gaps/{learner_id}`
 *   **Purpose:** Calculate deterministic gaps between learner mastery and target role.
 *   **Response Schema:**
     ```json
@@ -134,15 +134,15 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
     ```
 
 ### 2.6 Learning-Path Generation
-*   **Method:** `POST`
-*   **URL:** `/path/{learner_id}/generate`
+*   **Method:** `GET`
+*   **URL:** `/paths/generate/{learner_id}`
 *   **Purpose:** Execute Semantic Retrieval -> Scoring -> Topological Sort to create the roadmap.
 *   **Response Schema:** `LearningPathResponse` (List of ordered modules, milestones, estimated weeks).
 *   **Errors:** `500 Internal Server Error` (DAG cycle detected or Vector DB failure).
 
-### 2.7 Get Dashboard
+### 2.7 Get Next Best Action (Dashboard)
 *   **Method:** `GET`
-*   **URL:** `/dashboard/{learner_id}`
+*   **URL:** `/paths/nba/{learner_id}`
 *   **Purpose:** Aggregated endpoint returning data for the main UI.
 *   **Response Schema:**
     ```json
@@ -173,9 +173,9 @@ Custom global exception handlers in `main.py` return consistent JSON errors.
     }
     ```
 
-### 2.10 Progress Updates (Start / Complete / Skip)
+### 2.10 Progress Updates (Start / Complete / Skip / Struggling)
 *   **Method:** `POST`
-*   **URL:** `/modules/{module_id}/action`
+*   **URL:** `/modules/action`
 *   **Purpose:** Log a user action, update progress, and conditionally trigger adaptation.
 *   **Request Schema:**
     ```json

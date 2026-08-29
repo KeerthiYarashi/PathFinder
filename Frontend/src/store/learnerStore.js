@@ -1,6 +1,8 @@
 import { create } from 'zustand'
+import { supabase } from '../lib/supabase'
+import { authenticatedFetch } from '../lib/api'
 
-const API_BASE = 'http://localhost:8000/api/v1'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 // Mock Fallbacks for Standalone Frontend Execution
 const MOCK_GAPS = [
@@ -11,8 +13,8 @@ const MOCK_GAPS = [
 ]
 
 const MOCK_TIMELINE = {
-  learner_id: "demo-learner-id",
-  target_role: "Machine Learning Engineer",
+  learner_id: "",
+  target_role: "",
   total_weeks: 4,
   weeks: [
     {
@@ -123,6 +125,9 @@ const MOCK_TIMELINE = {
 }
 
 export const useLearnerStore = create((set, get) => ({
+  user: null,
+  session: null,
+  isAuthLoading: true,
   learnerId: localStorage.getItem('learner_id') || null,
   learnerProfile: (() => {
     try {
@@ -145,6 +150,63 @@ export const useLearnerStore = create((set, get) => ({
     const nextTheme = get().theme === 'dark' ? 'light' : 'dark'
     localStorage.setItem('theme', nextTheme)
     set({ theme: nextTheme })
+  },
+
+  initializeAuth: () => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      set({ session, user: session?.user ?? null, isAuthLoading: false })
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      set({ session, user: session?.user ?? null, isAuthLoading: false })
+    })
+
+    // Return the cleanup function
+    return () => subscription.unsubscribe()
+  },
+
+  signIn: async (email, password) => {
+    set({ isLoading: true, error: null })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) {
+      set({ error: error.message, isLoading: false })
+      throw error
+    }
+    set({ isLoading: false })
+    return data
+  },
+
+  signUp: async (email, password) => {
+    set({ isLoading: true, error: null })
+    const { data, error } = await supabase.auth.signUp({ email, password })
+    if (error) {
+      set({ error: error.message, isLoading: false })
+      throw error
+    }
+    set({ isLoading: false })
+    return data
+  },
+
+  signInWithOAuth: async (provider) => {
+    set({ isLoading: true, error: null })
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: provider,
+      options: {
+        redirectTo: window.location.origin + '/dashboard'
+      }
+    })
+    if (error) {
+      set({ error: error.message, isLoading: false })
+      throw error
+    }
+    set({ isLoading: false })
+    return data
+  },
+
+  signOut: async () => {
+    await supabase.auth.signOut()
+    set({ user: null, session: null })
+    get().clearStore()
   },
 
   setLearnerId: (id) => {
@@ -170,13 +232,29 @@ export const useLearnerStore = create((set, get) => ({
     set({ gaps: updatedGaps })
   },
 
+  // Save the payload returned from /api/v1/onboarding/upload
+  setUploadData: (uploadData) => {
+    const { extracted_profile, skill_gaps, timeline } = uploadData
+    
+    // Save to localStorage for persistence
+    localStorage.setItem('learner_id', "temp_user")
+    localStorage.setItem('learner_profile', JSON.stringify(extracted_profile))
+    
+    set({
+      learnerId: "temp_user",
+      learnerProfile: extracted_profile,
+      targetRole: extracted_profile.target_role,
+      gaps: skill_gaps,
+      timeline: timeline
+    })
+  },
+
   // Step 4: Create a profile on onboarding completion
   createProfile: async (name, timeBudget, format, difficulty) => {
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch(`${API_BASE}/learners/`, {
+      const data = await authenticatedFetch(`/learners/`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name,
           time_budget_hours: Number(timeBudget),
@@ -184,8 +262,6 @@ export const useLearnerStore = create((set, get) => ({
           difficulty_tolerance: difficulty
         })
       })
-      if (!response.ok) throw new Error('Failed to create learner profile')
-      const data = await response.json()
       
       localStorage.setItem('learner_id', data.id)
       set({ 
@@ -220,12 +296,10 @@ export const useLearnerStore = create((set, get) => ({
     if (!learnerId) return
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch(`${API_BASE}/paths/gaps/${learnerId}`)
-      if (!response.ok) throw new Error('Failed to fetch skill gaps')
-      const data = await response.json()
+      const data = await authenticatedFetch(`/paths/gaps/${learnerId}`)
       
       // Update target role if returned
-      const cleanRole = data.target_role === 'role_ml_engineer' ? 'Machine Learning Engineer' : 'Data Analyst'
+      const cleanRole = data.target_role || "Unknown Role"
       set({ 
         gaps: data.gaps, 
         targetRole: cleanRole,
@@ -235,7 +309,7 @@ export const useLearnerStore = create((set, get) => ({
       console.warn('Backend offline, using fallback skill gap data.')
       set({ 
         gaps: MOCK_GAPS,
-        targetRole: "Machine Learning Engineer",
+        targetRole: get().targetRole || "",
         isLoading: false 
       })
     }
@@ -247,9 +321,7 @@ export const useLearnerStore = create((set, get) => ({
     if (!learnerId) return
     set({ isLoading: true, error: null })
     try {
-      const response = await fetch(`${API_BASE}/paths/generate/${learnerId}`)
-      if (!response.ok) throw new Error('Failed to generate learning path')
-      const data = await response.json()
+      const data = await authenticatedFetch(`/paths/generate/${learnerId}`)
       
       // Inject fallback local status values if they don't exist
       const enrichedWeeks = data.weeks.map((week, wIdx) => ({
@@ -293,17 +365,14 @@ export const useLearnerStore = create((set, get) => ({
     set({ isRecalculating: true })
     
     try {
-      const response = await fetch(`${API_BASE}/modules/action`, {
+      const data = await authenticatedFetch(`/modules/action`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           learner_id: learnerId,
           skill_id: skillId,
           action_type: actionType
         })
       })
-      if (!response.ok) throw new Error('Failed to submit action')
-      const data = await response.json()
 
       // If backend reports recalculation is needed, re-fetch timeline
       if (data.requires_recalculation) {

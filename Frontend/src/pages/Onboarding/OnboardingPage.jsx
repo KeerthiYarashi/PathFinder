@@ -14,7 +14,7 @@ function OnboardingPage() {
   
   // Conversational state variables
   const [name, setName] = useState('')
-  const [role, setRole] = useState('Machine Learning Engineer')
+  const [role, setRole] = useState('')
   const [timeBudget, setTimeBudget] = useState(10)
   const [format, setFormat] = useState('mixed')
   const [difficulty, setDifficulty] = useState('normal')
@@ -75,7 +75,7 @@ function OnboardingPage() {
 
     let aiText = ''
     if (nextStep === 1) {
-      aiText = `Nice to meet you, ${userResponseText}! What is your target career role or skill goal? (e.g. Machine Learning Engineer, Data Analyst, or Data Scientist)`
+      aiText = `Nice to meet you, ${userResponseText}! What is your target career role or skill goal? (e.g. Data Analyst, Software Engineer)`
     } else if (nextStep === 2) {
       aiText = `Got it. How many hours can you dedicate to learning each week? Use the slider tool below to set your weekly budget.`
     } else if (nextStep === 3) {
@@ -119,7 +119,8 @@ function OnboardingPage() {
       const formData = new FormData()
       formData.append('file', file)
       
-      const res = await fetch('http://localhost:8000/api/v1/onboarding/extract', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1';
+      const res = await fetch(`${API_URL}/onboarding/extract`, {
         method: 'POST',
         body: JSON.stringify({ message: `Analyzing resume ${file.name}` }),
         headers: { 'Content-Type': 'application/json' }
@@ -129,7 +130,7 @@ function OnboardingPage() {
       
       setExtractedData({
         name: "Learner",
-        target_role: data.target_role === 'data_scientist' ? 'Data Scientist' : 'Machine Learning Engineer',
+        target_role: data.target_role || '',
         time_budget_hours: data.time_budget_hours,
         difficulty_tolerance: data.difficulty_tolerance,
         preferred_format: 'mixed'
@@ -138,8 +139,8 @@ function OnboardingPage() {
       console.warn("Backend offline, using fallback extraction data.")
       await new Promise(r => setTimeout(r, 2000))
       setExtractedData({
-        name: "Demo Learner",
-        target_role: "Machine Learning Engineer",
+        name: "",
+        target_role: "",
         time_budget_hours: 12,
         difficulty_tolerance: "normal",
         preferred_format: "mixed"
@@ -207,7 +208,7 @@ function OnboardingPage() {
               Conversational Chat
             </button>
             <button
-              onClick={() => setMode('upload')}
+              onClick={() => navigate('/onboarding/upload')}
               className={`flex-1 rounded-md py-2.5 text-sm font-bold transition-all ${
                 mode === 'upload'
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/10'
@@ -294,7 +295,7 @@ function OnboardingPage() {
                 {currentStep === 1 && (
                   <div className="flex flex-col gap-3">
                     <div className="flex flex-wrap gap-2 justify-center">
-                      {['Machine Learning Engineer', 'Data Analyst', 'Data Scientist'].map((r) => (
+                      {['Software Engineer', 'Data Analyst', 'Data Scientist'].map((r) => (
                         <button
                           key={r}
                           onClick={() => handleChatNextStep(r, r)}

@@ -1,9 +1,11 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import List
+# pyrefly: ignore [missing-import]
 from supabase import Client
 from db.database import get_supabase
 from services.mentor_agent import MentorAgentService
+from core.security import verify_supabase_jwt
 
 router = APIRouter()
 
@@ -16,7 +18,7 @@ class MentorChatResponse(BaseModel):
     tools_used: List[str]
 
 @router.post("/chat", response_model=MentorChatResponse)
-def talk_to_mentor(request: MentorChatRequest, db: Client = Depends(get_supabase)):
+def talk_to_mentor(request: MentorChatRequest, db: Client = Depends(get_supabase), current_user = Depends(verify_supabase_jwt)):
     learner_response = db.table("learners").select("*").eq("id", request.learner_id).execute()
     learner_data = learner_response.data[0] if learner_response.data else {}
     

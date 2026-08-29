@@ -28,6 +28,24 @@ class LLMService:
         chain = prompt | structured_model
         return chain.invoke({"messages": conversation})
 
+    def extract_profile_from_resume_jd(self, resume_text: str, jd_text: str) -> ExtractedProfile:
+        structured_model = self.model.with_structured_output(ExtractedProfile)
+        
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", """You are an expert career and learning advisor. Extract a rich learner profile from the provided Resume and Job Description.
+STRICT RULES:
+1. NEVER hallucinate information. If the candidate's actual full name is not present, leave `full_name` as null. DO NOT use placeholders like "Demo Learner" or "John Doe".
+2. Keep Resume data and Job Description data STRICTLY SEPARATE.
+   - `current_skills` must ONLY come from the Resume.
+   - `required_skills` and `preferred_skills` must ONLY come from the Job Description.
+3. For `current_skills`, assign a proficiency level ("Beginner", "Intermediate", "Advanced", or "Unknown") and extract the explicit `evidence` from the resume that justifies this level (e.g., "Built 3 projects using Python", "Used FastAPI at Company X").
+4. If preferences are not mentioned, provide sensible defaults (e.g. 10 weekly hours, mixed media)."""),
+            ("user", "Resume Text:\n{resume}\n\nJob Description:\n{jd}")
+        ])
+        
+        chain = prompt | structured_model
+        return chain.invoke({"resume": resume_text, "jd": jd_text})
+
     def generate_explanation(self, scoring_data: dict, learner_context: dict) -> str:
         prompt = ChatPromptTemplate.from_messages([
             ("system", "You are an AI learning mentor. Explain why this specific resource was recommended based ONLY on the following scoring data and learner context. Mention the exact percentages or factors. Keep it to one short, encouraging paragraph."),
@@ -51,3 +69,24 @@ class LLMService:
         ])
         chain = prompt | self.model | StrOutputParser()
         return chain.invoke({"messages": messages})
+
+    def generate_search_queries(self, missing_skills: list[str], target_role: str) -> dict[str, str]:
+        """
+        Generates contextual search queries for each missing skill.
+        Returns a dict mapping skill_name -> search_query
+        """
+        # We need a structured output to map skill to query reliably
+        from pydantic import BaseModel
+        class SkillQueries(BaseModel):
+            queries: dict[str, str]
+
+        structured_model = self.model.with_structured_output(SkillQueries)
+        
+        prompt = ChatPromptTemplate.from_messages([
+            ("system", "You are an expert learning advisor. Given a target role and a list of missing skills, generate exactly ONE highly relevant, practical search query per missing skill to find tutorials, courses, or guides online. For example, if skill='Pandas' and role='Data Analyst', query might be 'Pandas data analysis beginner tutorial'. Return a mapping of skill name to the search query."),
+            ("user", "Target Role: {role}\nMissing Skills: {skills}")
+        ])
+        
+        chain = prompt | structured_model
+        result = chain.invoke({"role": target_role, "skills": ", ".join(missing_skills)})
+        return result.queries

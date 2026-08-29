@@ -1,3 +1,4 @@
+# pyrefly: ignore [missing-import]
 from supabase import Client
 from engines.path_generator import get_prerequisites
 from services.data_access import generate_learner_timeline
