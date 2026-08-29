@@ -1,6 +1,6 @@
 import { supabase } from './supabase'
 
-const API_BASE = 'http://localhost:8000/api/v1'
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1'
 
 export async function authenticatedFetch(endpoint, options = {}) {
   // Always get the freshest session directly from Supabase to prevent stale token usage
