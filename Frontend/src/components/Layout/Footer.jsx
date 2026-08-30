@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useLearnerStore } from '../../store/learnerStore'
-import { Compass, Github, Twitter, Linkedin, Mail, Heart, ArrowUpRight } from 'lucide-react'
+import { Compass, Code, MessageCircle, Briefcase, Mail, Heart, ArrowUpRight } from 'lucide-react'
 
 function Footer() {
   const theme = useLearnerStore((state) => state.theme)
@@ -39,9 +39,9 @@ function Footer() {
   ]
 
   const socialLinks = [
-    { icon: Github, href: '#', label: 'GitHub' },
-    { icon: Twitter, href: '#', label: 'Twitter' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
+    { icon: Code, href: '#', label: 'GitHub' },
+    { icon: MessageCircle, href: '#', label: 'Twitter' },
+    { icon: Briefcase, href: '#', label: 'LinkedIn' },
     { icon: Mail, href: 'mailto:support@pathfinder.dev', label: 'Email' },
   ]
 
