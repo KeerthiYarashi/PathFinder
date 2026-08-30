@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useLearnerStore } from '../../store/learnerStore'
 import Navbar from './Navbar'
+import Footer from './Footer'
 import AIMentorFAB from '../Mentor/AIMentorFAB'
 
 function AppLayout({ children }) {
@@ -42,6 +43,8 @@ function AppLayout({ children }) {
       <main className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {children}
       </main>
+
+      <Footer />
 
       {/* Floating AI Study Mentor chatbot */}
       <AIMentorFAB />

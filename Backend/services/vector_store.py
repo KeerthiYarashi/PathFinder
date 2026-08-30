@@ -15,8 +15,13 @@ try:
 except ImportError:
     torch = None
 
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+
 class VectorStoreService:
     def __init__(self):
+        print(f"Initializing GoogleGenerativeAIEmbeddings")
+        
+        self.embeddings = GoogleGenerativeAIEmbeddings(model="models/text-embedding-004")
         self.collection_name = settings.VECTOR_COLLECTION
         self.connection = settings.SUPABASE_DB_URL
         

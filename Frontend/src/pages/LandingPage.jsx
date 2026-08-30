@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { Compass, Zap, Target, ArrowRight } from 'lucide-react'
+import Footer from '../components/Layout/Footer'
 
 function LandingPage() {
   // SVG path morph states
@@ -240,14 +241,7 @@ function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-slate-900 bg-slate-950 px-6 sm:px-12 py-8 text-center text-xs text-slate-550 z-10 flex flex-col sm:flex-row justify-between gap-4 max-w-7xl w-full mx-auto">
-        <span className="text-slate-500">© 2026 PathFinder Inc. All rights reserved.</span>
-        <div className="flex gap-6 justify-center text-slate-400">
-          <a href="#" className="hover:text-white transition-colors">Privacy Policy</a>
-          <a href="#" className="hover:text-white transition-colors">Terms of Service</a>
-          <a href="#" className="hover:text-white transition-colors">Contact Support</a>
-        </div>
-      </footer>
+      <Footer />
     </div>
   )
 }
